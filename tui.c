@@ -1,4 +1,4 @@
-/* $Id: tui.c,v 1.1 2012/04/16 19:07:07 demon Exp $ */
+/* $Id: tui.c,v 1.2 2012/04/17 18:53:39 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -32,13 +32,13 @@ dumpmem(unsigned short *m)
 
 	wmove(code, 0, 0);
 
-	for (i = 0; i < MEMSZ; i += 8) {
-		if (++lines > 24)
-			break;
+	for (lines = 0, i = 0; i < MEMSZ; i += 8) {
 		for (sum = 0, k = 0; k < 8; k++)
-			sum += m[i + k];
+			sum |= m[i + k];
 		if (!sum)
 			continue;
+		if (++lines > 24)
+			break;
 		wprintw(code, "%4.4x:", i);
 		for (k = 0; k < 8; k++)
 			wprintw(code, "%5.4x", m[i + k]);
