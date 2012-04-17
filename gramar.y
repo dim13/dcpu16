@@ -1,4 +1,4 @@
-/* $Id: gramar.y,v 1.2 2012/04/17 18:23:52 demon Exp $ */
+/* $Id: gramar.y,v 1.3 2012/04/17 19:54:01 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -35,10 +35,10 @@ void addref(char *);
 extern int yydebug;
 #endif
 
-struct {
+struct pair {
 	unsigned short val;
 	char *label;
-} stack[0x100], ref[0x100];
+} *stack, *ref;
 
 int sp = 0;
 int rp = 0;
@@ -276,6 +276,8 @@ compile(FILE *fd, size_t sz)
 {
 	buffer = calloc(sz, sizeof(unsigned short));
 	label = calloc(sz, sizeof(char *));
+	stack = calloc(sz, sizeof(struct pair));
+	ref = calloc(sz, sizeof(struct pair));
 
 #if YYDEBUG
 	yydebug = 1;
@@ -284,6 +286,9 @@ compile(FILE *fd, size_t sz)
 	yyin = fd;
 	yyparse();
 	restorerefs();
+
+	free(ref);
+	free(stack);
 	free(label);
 
 	return buffer;
