@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.2 2012/04/17 18:23:52 demon Exp $ */
+/* $Id: main.c,v 1.3 2012/04/17 18:46:51 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -44,7 +44,7 @@ usage(void)
 {
 	extern char *__progname;
 
-	(void)fprintf(stderr, "Usage: %s [-gt]\n", __progname);
+	(void)fprintf(stderr, "Usage: %s [-eg]\n", __progname);
 	exit(1);
 }
 
@@ -58,13 +58,13 @@ main(int argc, char **argv)
 	int g_flag = 0;
 	int ch;
 
-	while ((ch = getopt(argc, argv, "gt")) != -1)
+	while ((ch = getopt(argc, argv, "eg")) != -1)
 		switch (ch) {
+		case 'e':
+			e_flag = 1;
+			break;
 		case 'g':
 			g_flag = 1;
-			break;
-		case 't':
-			e_flag = 1;
 			break;
 		default:
 			usage();
