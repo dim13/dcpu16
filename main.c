@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.1 2012/04/16 19:07:07 demon Exp $ */
+/* $Id: main.c,v 1.2 2012/04/17 18:23:52 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -81,7 +81,7 @@ main(int argc, char **argv)
 	if (!fd)
 		err(1, "cannot open file");
 
-	m = compile(fd);
+	m = compile(fd, MEMSZ);
 	fclose(fd);
 
 	if (e_flag)

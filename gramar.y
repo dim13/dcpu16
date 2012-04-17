@@ -1,4 +1,4 @@
-/* $Id: gramar.y,v 1.1 2012/04/16 19:07:07 demon Exp $ */
+/* $Id: gramar.y,v 1.2 2012/04/17 18:23:52 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -18,13 +18,18 @@
 %{
 #include <sys/queue.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include "dcpu16.h"
 
 extern int yylineno;
 extern FILE *yyin;
 int yylex(void);
 int yyparse(void);
+void yyerror(const char *);
+void push(int, char *);
+void popop(int);
+void popall(void);
+void addref(char *);
 
 #if YYDEBUG
 extern int yydebug;
@@ -39,8 +44,8 @@ int sp = 0;
 int rp = 0;
 int pc = 0;
 
-unsigned short buffer[MEMSZ];
-char *label[MEMSZ];
+unsigned short *buffer;
+char **label;
 
 %}
 
@@ -267,14 +272,19 @@ restorerefs(void)
 }
 
 unsigned short *
-compile(FILE *fd)
+compile(FILE *fd, size_t sz)
 {
+	buffer = calloc(sz, sizeof(unsigned short));
+	label = calloc(sz, sizeof(char *));
+
 #if YYDEBUG
 	yydebug = 1;
 #endif
+
 	yyin = fd;
 	yyparse();
 	restorerefs();
+	free(label);
 
 	return buffer;
 }
