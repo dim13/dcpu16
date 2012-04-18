@@ -1,4 +1,4 @@
-/* $Id: dcpu16.h,v 1.2 2012/04/17 18:23:52 demon Exp $ */
+/* $Id: dcpu16.h,v 1.3 2012/04/18 03:47:31 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -44,6 +44,7 @@ enum { Res, JSR, BRK, nExt };
 unsigned short *compile(FILE *, size_t);
 int step(unsigned short *, unsigned short *);
 void tuiemu(unsigned short *, unsigned short *);
-
+void guiemu(unsigned short *, unsigned short *);
+void dumpcode(unsigned short *, unsigned short *);
 
 #endif

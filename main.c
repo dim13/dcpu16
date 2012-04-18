@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.3 2012/04/17 18:46:51 demon Exp $ */
+/* $Id: main.c,v 1.4 2012/04/18 03:47:31 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -21,8 +21,10 @@
 #include <unistd.h>
 #include "dcpu16.h"
 
+void (*emu)(unsigned short *, unsigned short *);
+
 void
-dumpcode(unsigned short *m)
+dumpcode(unsigned short *m, unsigned short *r)
 {
 	int i, k, sum;
 
@@ -54,17 +56,17 @@ main(int argc, char **argv)
 	unsigned short *m;
 	unsigned short r[nReg] = { 0 };
 	FILE *fd;
-	int e_flag = 0;
-	int g_flag = 0;
 	int ch;
+
+	emu = dumpcode;
 
 	while ((ch = getopt(argc, argv, "eg")) != -1)
 		switch (ch) {
 		case 'e':
-			e_flag = 1;
+			emu = tuiemu;
 			break;
 		case 'g':
-			g_flag = 1;
+			emu = guiemu;
 			break;
 		default:
 			usage();
@@ -84,10 +86,7 @@ main(int argc, char **argv)
 	m = compile(fd, MEMSZ);
 	fclose(fd);
 
-	if (e_flag)
-		tuiemu(m, r);
-	else
-		dumpcode(m);
+	emu(m, r);
 
 	return 0;
 }
