@@ -1,4 +1,4 @@
-/* $Id: gui.c,v 1.1 2012/04/18 03:47:31 demon Exp $ */
+/* $Id: gui.c,v 1.2 2012/04/18 16:32:52 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -16,6 +16,7 @@
  */
 
 #include <SDL.h>
+#include <SDL_image.h>
 #include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,9 +37,6 @@ Uint32 	amask = 0xff000000;
 #endif
 
 SDL_Surface *screen;
-
-SDL_Rect disp = { 0, 0, 640, 480 };
-SDL_Rect out = { 64, 48, 640, 480 };
 
 SDL_Rect draw = { 16, 12, 128, 96 };
 SDL_Rect scr = { 0, 0, 160, 120 };
@@ -77,7 +75,16 @@ setpixel(SDL_Surface *s, int x, int y, SDL_Color *c)
 {
 	Uint32 *buf = (Uint32 *)s->pixels + y * (s->pitch >> 2) + x;
 	Uint32 pixel = SDL_MapRGB(s->format, c->r, c->g, c->b);
+
 	*buf = pixel;
+}
+
+Uint32
+getpixel(SDL_Surface *s, int x, int y)
+{
+	Uint32 *buf = (Uint32 *)s->pixels + y * (s->pitch >> 2) + x;
+
+	return *buf;
 }
 
 void
@@ -115,6 +122,31 @@ mkglyph(unsigned char ch, SDL_Color *fg, SDL_Color *bg, unsigned short *m)
 	
 	return g;
 }
+
+#if 0
+void
+loadfont(unsigned short *m, char *font)
+{
+	int w, h, x, y, ch;
+
+	SDL_Surface *img;
+	SDL_Rect frame;
+
+	img = IMG_Load(font);
+
+	w = img->w / 4;
+	h = img->h / 8;
+
+	for (x = 0; x < img->h; x += 8) {
+		for (y = 0; y < img->w; y += 4) {
+			ch = y / 4 + x / 8 * w;
+			//printf("%d\n", ch);
+		}
+	}
+
+	SDL_FreeSurface(img);
+}
+#endif
 
 void
 setfont(unsigned short *m)
@@ -174,8 +206,26 @@ guiemu(unsigned short *m, unsigned short *r)
 			case SDL_QUIT:
 				goto leave;
 			case SDL_KEYDOWN:
-				m[KEYB + k] = event.key.keysym.sym;
-				printf("%x\n", m[KEYB + k]);
+				switch (event.key.keysym.sym) {
+				case SDLK_UP:
+					m[KEYB + k] = 38;
+					break;
+				case SDLK_DOWN:
+					m[KEYB + k] = 40;
+					break;
+				case SDLK_LEFT:
+					m[KEYB + k] = 37;
+					break;
+				case SDLK_RIGHT:
+					m[KEYB + k] = 39;
+					break;
+				default:
+					m[KEYB + k] = event.key.keysym.sym;
+					if (event.key.keysym.mod & KMOD_SHIFT)
+						m[KEYB + k] -= 0x20;
+					break;
+				}
+				printf("%d\n", m[KEYB + k]);
 				k = (k + 1) % 0x10;
 				break;
 			}
