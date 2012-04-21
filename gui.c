@@ -1,4 +1,4 @@
-/* $Id: gui.c,v 1.2 2012/04/18 16:32:52 demon Exp $ */
+/* $Id: gui.c,v 1.3 2012/04/21 17:01:43 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -219,13 +219,13 @@ guiemu(unsigned short *m, unsigned short *r)
 				case SDLK_RIGHT:
 					m[KEYB + k] = 39;
 					break;
+				case SDLK_RETURN:
+					m[KEYB + k] = 10;
+					break;
 				default:
 					m[KEYB + k] = event.key.keysym.sym;
-					if (event.key.keysym.mod & KMOD_SHIFT)
-						m[KEYB + k] -= 0x20;
 					break;
 				}
-				printf("%d\n", m[KEYB + k]);
 				k = (k + 1) % 0x10;
 				break;
 			}
