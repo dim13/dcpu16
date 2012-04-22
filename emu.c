@@ -1,4 +1,4 @@
-/* $Id: emu.c,v 1.1 2012/04/16 19:07:07 demon Exp $ */
+/* $Id: emu.c,v 1.2 2012/04/22 23:35:16 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -18,11 +18,11 @@
 #include <stdio.h>
 #include "dcpu16.h"
 
-unsigned short *mem;
-unsigned short *reg;
+static unsigned short *mem;
+static unsigned short *reg;
 
-unsigned short skip = 0;
-unsigned short run = 1;
+static unsigned short skip = 0;
+static unsigned short run = 1;
 
 void ext(unsigned short *a, unsigned short *b);
 void set(unsigned short *a, unsigned short *b);

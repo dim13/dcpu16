@@ -1,4 +1,4 @@
-/* $Id: gui.c,v 1.7 2012/04/22 20:58:54 demon Exp $ */
+/* $Id: gui.c,v 1.8 2012/04/22 23:35:16 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -54,8 +54,17 @@ SDL_Color color[0x10] = {
 void
 setpixel(SDL_Surface *s, int x, int y, Uint8 c)
 {
-	Uint8 *buf = (Uint8 *)s->pixels + y * s->pitch + x;
-	*buf = c;
+	Uint8 *p = (Uint8 *)s->pixels + y * s->pitch + x;
+
+	*p = c;
+}
+
+Uint8
+getpixel(SDL_Surface *s, int x, int y)
+{
+	Uint8 *p = (Uint8 *)s->pixels + y * s->pitch + x;
+
+	return *p;
 }
 
 void

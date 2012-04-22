@@ -1,4 +1,4 @@
-/* $Id: gramar.y,v 1.3 2012/04/17 19:54:01 demon Exp $ */
+/* $Id: gramar.y,v 1.4 2012/04/22 23:35:16 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -40,9 +40,9 @@ struct pair {
 	char *label;
 } *stack, *ref;
 
-int sp = 0;
-int rp = 0;
-int pc = 0;
+static int sp = 0;
+static int rp = 0;
+static int pc = 0;
 
 unsigned short *buffer;
 char **label;
