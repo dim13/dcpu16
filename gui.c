@@ -1,4 +1,4 @@
-/* $Id: gui.c,v 1.6 2012/04/22 20:18:31 demon Exp $ */
+/* $Id: gui.c,v 1.7 2012/04/22 20:58:54 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -59,13 +59,21 @@ setpixel(SDL_Surface *s, int x, int y, Uint8 c)
 }
 
 void
-drawglyph(SDL_Surface *screen, SDL_Rect to,
-	unsigned char ch, Uint8 fg, Uint8 bg, unsigned short *m)
+drawglyph(SDL_Surface *screen, int x, int y, unsigned short *m)
 {
-	Uint8 c;
-	int i;
+	SDL_Rect to;
+	Uint8 bg, fg, c, i;
+	unsigned short ch;
 
+	ch = m[DISP + y * 32 + x];
+	bg = (ch >> 8) & 0x0f;
+	fg = (ch >> 12) & 0x0f;
 	ch = (ch & 0x7f) << 1;
+
+	to.w = gl.w;
+	to.h = gl.h;
+	to.x = draw.x + x * to.w;
+	to.y = draw.y + y * to.h;
 
 	for (i = 0; i < 8; i++) {
 		c = m[CHARS + ch] & (0x0100 << i) ? fg : bg;
@@ -80,6 +88,59 @@ drawglyph(SDL_Surface *screen, SDL_Rect to,
 		c = m[CHARS + ch + 1] & (0x0001 << i) ? fg : bg;
 		setpixel(screen, to.x + 3, to.y + i, c);
 	}
+}
+
+void
+drawscreen(SDL_Surface *screen, unsigned short *m)
+{
+	int x, y;
+
+	SDL_FillRect(screen, &scr, (m[MISC] >> 8) & 0x0f);
+
+	for (x = 0; x < 32; x++)
+		for (y = 0; y < 12; y++)
+			drawglyph(screen, x, y, m);
+
+	SDL_Flip(screen);
+}
+
+int
+keyboard(unsigned short *m)
+{
+	SDL_Event event;
+	static int k = 0;
+
+	while (SDL_PollEvent(&event)) {
+		switch (event.type) {
+		case SDL_QUIT:
+			return -1;
+		case SDL_KEYDOWN:
+			switch (event.key.keysym.sym) {
+			case SDLK_UP:
+				m[KEYB + k] = '&';	/* 38 */
+				break;
+			case SDLK_DOWN:
+				m[KEYB + k] = '(';	/* 40 */
+				break;
+			case SDLK_LEFT:
+				m[KEYB + k] = '%';	/* 37 */
+				break;
+			case SDLK_RIGHT:
+				m[KEYB + k] = '\'';	/* 39 */
+				break;
+			case SDLK_RETURN:
+				m[KEYB + k] = '\n';	/* 10 */
+				break;
+			default:
+				m[KEYB + k] = event.key.keysym.sym;
+				break;
+			}
+			k = (k + 1) % 0x10;
+			break;
+		}
+	}
+
+	return 0;
 }
 
 #if 0
@@ -123,73 +184,20 @@ setfont(unsigned short *m)
 void
 guiemu(unsigned short *m, unsigned short *r)
 {
-	SDL_Rect to;
-	Uint8 fg, bg;
-	SDL_Event event;
-	int ch, x, y, k = 0, n = 0;
+	int n = 0;
 
 	screen = SDL_SetVideoMode(scr.w, scr.h, 8, SDL_HWSURFACE|SDL_HWPALETTE);
 	SDL_SetColors(screen, color, 0, 16);
 
 	setfont(m);
 
-	to.w = gl.w;
-	to.h = gl.h;
-
 	while (step(m, r) != -1) {
 		if (++n % 100)
 			continue;
-
-		bg = (m[MISC] >> 8) & 0x0f;
-		fg = (m[MISC] >> 12) & 0x0f;
-		SDL_FillRect(screen, &scr, bg);
-
-		for (x = 0; x < 32; x++) {
-			for (y = 0; y < 12; y++) {
-				to.x = draw.x + x * to.w;
-				to.y = draw.y + y * to.h;
-
-				ch = m[DISP + y * 32 + x];
-
-				bg = (ch >> 8) & 0x0f;
-				fg = (ch >> 12) & 0x0f;
-				drawglyph(screen, to, ch, fg, bg, m);
-			}
-		}
-
-		SDL_Flip(screen);
-
-		while (SDL_PollEvent(&event)) {
-			switch (event.type) {
-			case SDL_QUIT:
-				goto leave;
-			case SDL_KEYDOWN:
-				switch (event.key.keysym.sym) {
-				case SDLK_UP:
-					m[KEYB + k] = '&';	/* 38 */
-					break;
-				case SDLK_DOWN:
-					m[KEYB + k] = '(';	/* 40 */
-					break;
-				case SDLK_LEFT:
-					m[KEYB + k] = '%';	/* 37 */
-					break;
-				case SDLK_RIGHT:
-					m[KEYB + k] = '\'';	/* 39 */
-					break;
-				case SDLK_RETURN:
-					m[KEYB + k] = '\n';	/* 10 */
-					break;
-				default:
-					m[KEYB + k] = event.key.keysym.sym;
-					break;
-				}
-				k = (k + 1) % 0x10;
-				break;
-			}
-		}
+		drawscreen(screen, m);
+		if (keyboard(m) == -1)
+			break;
 	}
 
-leave:
 	SDL_FreeSurface(screen);
 }
