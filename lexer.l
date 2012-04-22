@@ -1,4 +1,4 @@
-/* $Id: lexer.l,v 1.1 2012/04/16 19:07:07 demon Exp $ */
+/* $Id: lexer.l,v 1.2 2012/04/22 21:24:28 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -95,8 +95,13 @@ DEC	[0-9]+
 
 "\""			BEGIN(QUOTED);
 <QUOTED>[^\"]+		{
-				yylval.sval = strdup(yytext);
-				return QSTRING;
+				if (strlen(yytext) == 1) {
+					yylval.ival = *yytext;
+					return NUMBER;
+				} else  {
+					yylval.sval = strdup(yytext);
+					return QSTRING;
+				}
 			}
 <QUOTED>"\""		BEGIN(INITIAL);
 
