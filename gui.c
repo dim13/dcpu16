@@ -1,4 +1,4 @@
-/* $Id: gui.c,v 1.5 2012/04/22 19:44:44 demon Exp $ */
+/* $Id: gui.c,v 1.6 2012/04/22 20:18:31 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -59,26 +59,26 @@ setpixel(SDL_Surface *s, int x, int y, Uint8 c)
 }
 
 void
-mkglyph(SDL_Surface *g, unsigned char ch, Uint8 fg, Uint8 bg, unsigned short *m)
+drawglyph(SDL_Surface *screen, SDL_Rect to,
+	unsigned char ch, Uint8 fg, Uint8 bg, unsigned short *m)
 {
 	Uint8 c;
 	int i;
 
-	ch &= 0x7f;
-	ch <<= 1;
+	ch = (ch & 0x7f) << 1;
 
 	for (i = 0; i < 8; i++) {
 		c = m[CHARS + ch] & (0x0100 << i) ? fg : bg;
-		setpixel(g, 0, i, c);
+		setpixel(screen, to.x + 0, to.y + i, c);
 
 		c = m[CHARS + ch] & (0x0001 << i) ? fg : bg;
-		setpixel(g, 1, i, c);
+		setpixel(screen, to.x + 1, to.y + i, c);
 
 		c = m[CHARS + ch + 1] & (0x0100 << i) ? fg : bg;
-		setpixel(g, 2, i, c);
+		setpixel(screen, to.x + 2, to.y + i, c);
 
 		c = m[CHARS + ch + 1] & (0x0001 << i) ? fg : bg;
-		setpixel(g, 3, i, c);
+		setpixel(screen, to.x + 3, to.y + i, c);
 	}
 }
 
@@ -123,7 +123,6 @@ setfont(unsigned short *m)
 void
 guiemu(unsigned short *m, unsigned short *r)
 {
-	SDL_Surface *glyph;
 	SDL_Rect to;
 	Uint8 fg, bg;
 	SDL_Event event;
@@ -132,9 +131,6 @@ guiemu(unsigned short *m, unsigned short *r)
 	screen = SDL_SetVideoMode(scr.w, scr.h, 8, SDL_HWSURFACE|SDL_HWPALETTE);
 	SDL_SetColors(screen, color, 0, 16);
 
-	glyph = SDL_CreateRGBSurface(SDL_HWSURFACE|SDL_HWPALETTE, gl.w, gl.h, 8, 0, 0, 0, 0);
-	SDL_SetColors(glyph, color, 0, 16);
-	
 	setfont(m);
 
 	to.w = gl.w;
@@ -157,9 +153,7 @@ guiemu(unsigned short *m, unsigned short *r)
 
 				bg = (ch >> 8) & 0x0f;
 				fg = (ch >> 12) & 0x0f;
-				mkglyph(glyph, ch, fg, bg, m);
-
-				SDL_BlitSurface(glyph, &gl, screen, &to);
+				drawglyph(screen, to, ch, fg, bg, m);
 			}
 		}
 
@@ -197,6 +191,5 @@ guiemu(unsigned short *m, unsigned short *r)
 	}
 
 leave:
-	SDL_FreeSurface(glyph);
 	SDL_FreeSurface(screen);
 }
