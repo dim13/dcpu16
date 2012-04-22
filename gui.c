@@ -1,4 +1,4 @@
-/* $Id: gui.c,v 1.3 2012/04/21 17:01:43 demon Exp $ */
+/* $Id: gui.c,v 1.4 2012/04/22 17:26:23 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -23,18 +23,6 @@
 #include <unistd.h>
 #include "dcpu16.h"
 #include "font.h"
-
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-Uint32 	rmask = 0xff000000;
-Uint32 	gmask = 0x00ff0000;
-Uint32 	bmask = 0x0000ff00;
-Uint32 	amask = 0x000000ff;
-#else
-Uint32 	rmask = 0x000000ff;
-Uint32 	gmask = 0x0000ff00;
-Uint32 	bmask = 0x00ff0000;
-Uint32 	amask = 0xff000000;
-#endif
 
 SDL_Surface *screen;
 
@@ -64,44 +52,22 @@ SDL_Color color[0x10] = {
 };
 
 void
-decodecolor(unsigned short u, SDL_Color **fg, SDL_Color **bg)
+setpixel(SDL_Surface *s, int x, int y, Uint8 c)
 {
-	*bg = &color[(u >> 8) & 0x0f];
-	*fg = &color[(u >> 12) & 0x0f];
-}
-
-void
-setpixel(SDL_Surface *s, int x, int y, SDL_Color *c)
-{
-	Uint32 *buf = (Uint32 *)s->pixels + y * (s->pitch >> 2) + x;
-	Uint32 pixel = SDL_MapRGB(s->format, c->r, c->g, c->b);
-
-	*buf = pixel;
-}
-
-Uint32
-getpixel(SDL_Surface *s, int x, int y)
-{
-	Uint32 *buf = (Uint32 *)s->pixels + y * (s->pitch >> 2) + x;
-
-	return *buf;
-}
-
-void
-fillrect(SDL_Surface *s, SDL_Rect *r, SDL_Color *c)
-{
-	SDL_FillRect(s, r, SDL_MapRGB(s->format, c->r, c->g, c->b));
+	Uint8 *buf = (Uint8 *)s->pixels + y * s->pitch + x;
+	*buf = c;
 }
 
 SDL_Surface *
-mkglyph(unsigned char ch, SDL_Color *fg, SDL_Color *bg, unsigned short *m)
+mkglyph(unsigned char ch, Uint8 fg, Uint8 bg, unsigned short *m)
 {
 	SDL_Surface *g;
-	SDL_Color *c;
+	Uint8 c;
 	int i;
 
-	g = SDL_CreateRGBSurface(SDL_SWSURFACE, gl.w, gl.h, 32,
-		rmask, gmask, bmask, amask);
+	g = SDL_CreateRGBSurface(SDL_HWSURFACE|SDL_HWPALETTE, gl.w, gl.h, 8, 0, 0, 0, 0);
+	SDL_SetColors(g, color, 0, 16);
+	
 
 	ch &= 0x7f;
 	ch <<= 1;
@@ -166,11 +132,12 @@ guiemu(unsigned short *m, unsigned short *r)
 {
 	SDL_Surface *glyph;
 	SDL_Rect to;
-	SDL_Color *fg, *bg;
+	Uint8 fg, bg;
 	SDL_Event event;
 	int ch, x, y, k = 0, n = 0;
 
-	screen = SDL_SetVideoMode(scr.w, scr.h, 32, SDL_SWSURFACE);
+	screen = SDL_SetVideoMode(scr.w, scr.h, 8, SDL_HWSURFACE|SDL_HWPALETTE);
+	SDL_SetColors(screen, color, 0, 16);
 	setfont(m);
 
 	to.w = gl.w;
@@ -180,9 +147,9 @@ guiemu(unsigned short *m, unsigned short *r)
 		if (++n % 100)
 			continue;
 
-		decodecolor(m[MISC], &fg, &bg);
-
-		fillrect(screen, &scr, bg);
+		bg = (m[MISC] >> 8) & 0x0f;
+		fg = (m[MISC] >> 12) & 0x0f;
+		SDL_FillRect(screen, &scr, bg);
 
 		for (x = 0; x < 32; x++) {
 			for (y = 0; y < 12; y++) {
@@ -191,7 +158,8 @@ guiemu(unsigned short *m, unsigned short *r)
 
 				ch = m[DISP + y * 32 + x];
 
-				decodecolor(ch, &fg, &bg);
+				bg = (ch >> 8) & 0x0f;
+				fg = (ch >> 12) & 0x0f;
 				glyph = mkglyph(ch, fg, bg, m);
 
 				SDL_BlitSurface(glyph, &gl, screen, &to);
@@ -208,19 +176,19 @@ guiemu(unsigned short *m, unsigned short *r)
 			case SDL_KEYDOWN:
 				switch (event.key.keysym.sym) {
 				case SDLK_UP:
-					m[KEYB + k] = 38;
+					m[KEYB + k] = '&';	/* 38 */
 					break;
 				case SDLK_DOWN:
-					m[KEYB + k] = 40;
+					m[KEYB + k] = '(';	/* 40 */
 					break;
 				case SDLK_LEFT:
-					m[KEYB + k] = 37;
+					m[KEYB + k] = '%';	/* 37 */
 					break;
 				case SDLK_RIGHT:
-					m[KEYB + k] = 39;
+					m[KEYB + k] = '\'';	/* 39 */
 					break;
 				case SDLK_RETURN:
-					m[KEYB + k] = 10;
+					m[KEYB + k] = '\n';	/* 10 */
 					break;
 				default:
 					m[KEYB + k] = event.key.keysym.sym;
