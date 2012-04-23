@@ -1,4 +1,4 @@
-/* $Id: gui.c,v 1.10 2012/04/23 21:34:49 demon Exp $ */
+/* $Id: gui.c,v 1.11 2012/04/23 21:44:33 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -104,7 +104,7 @@ drawscreen(SDL_Surface *screen, unsigned short *m)
 {
 	int x, y;
 
-	SDL_FillRect(screen, &scr, (m[MISC] >> 8) & 0x0f);
+	SDL_FillRect(screen, &scr, m[BORDER] & 0x0f);
 
 	for (x = 0; x < 32; x++)
 		for (y = 0; y < 12; y++)
@@ -190,7 +190,7 @@ setfont(unsigned short *m)
 		m[CHARS + 2 * i + 1] = atari_small[i][1];
 	}
 
-	m[MISC] = 0x8000;	/* set default fg/bg */
+	m[BORDER] = 0;		/* set default bg to black */
 }
 
 void

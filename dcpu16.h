@@ -1,4 +1,4 @@
-/* $Id: dcpu16.h,v 1.3 2012/04/18 03:47:31 demon Exp $ */
+/* $Id: dcpu16.h,v 1.4 2012/04/23 21:44:33 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -33,8 +33,7 @@ enum { Res, JSR, BRK, nExt };
 #define CHARS	0x8180
 #define CHAREND	0x8280
 
-#define MISC	0x8280		/* bg color */
-#define MISCEND	0x8281
+#define BORDER	0x8280
 
 #define KEYB	0x9000
 #define KEYP	0x9010
