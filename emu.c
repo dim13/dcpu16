@@ -1,4 +1,4 @@
-/* $Id: emu.c,v 1.3 2012/04/23 21:22:38 demon Exp $ */
+/* $Id: emu.c,v 1.4 2012/04/23 21:34:49 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -190,28 +190,28 @@ void
 ife(unsigned short *a, unsigned short *b)
 {
 	skip = !(*a == *b);
-	cycle += skip ? 3 : 2;
+	cycle += 2 + skip;
 }
 
 void
 ifn(unsigned short *a, unsigned short *b)
 {
 	skip = !(*a != *b);
-	cycle += skip ? 3 : 2;
+	cycle += 2 + skip;
 }
 
 void
 ifg(unsigned short *a, unsigned short *b)
 {
 	skip = !(*a > *b);
-	cycle += skip ? 3 : 2;
+	cycle += 2 + skip;
 }
 
 void
 ifb(unsigned short *a, unsigned short *b)
 {
 	skip = !(*a & *b);
-	cycle += skip ? 3 : 2;
+	cycle += 2 + skip;
 }
 
 void
@@ -325,5 +325,5 @@ step(unsigned short *m, unsigned short *r)
 
 	usleep(10 * cycle);	/* 100kHz */
 
-	return 0;
+	return cycle;
 }

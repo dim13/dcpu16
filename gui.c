@@ -1,4 +1,4 @@
-/* $Id: gui.c,v 1.9 2012/04/23 02:14:45 demon Exp $ */
+/* $Id: gui.c,v 1.10 2012/04/23 21:34:49 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -196,17 +196,18 @@ setfont(unsigned short *m)
 void
 guiemu(unsigned short *m, unsigned short *r)
 {
-	int n = 0;
+	int c, n = 0;
 
 	screen = SDL_SetVideoMode(scr.w, scr.h, 8, SDL_HWSURFACE|SDL_HWPALETTE);
 	SDL_SetColors(screen, color, 0, 16);
 
 	setfont(m);
 
-	while (step(m, r) != -1) {
-		if (++n % 100)
+	while ((c = step(m, r)) != -1) {
+		if ((n += c) < 100)
 			continue;
 		drawscreen(screen, m);
+		n = 0;
 		if (keyboard(m) == -1)
 			break;
 	}
