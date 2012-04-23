@@ -1,4 +1,4 @@
-/* $Id: gui.c,v 1.8 2012/04/22 23:35:16 demon Exp $ */
+/* $Id: gui.c,v 1.9 2012/04/23 02:14:45 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -152,30 +152,33 @@ keyboard(unsigned short *m)
 	return 0;
 }
 
-#if 0
 void
 loadfont(unsigned short *m, char *font)
 {
-	int w, h, x, y, ch;
+	int w, h, x, y, ch, i, p;
 
 	SDL_Surface *img;
 	SDL_Rect frame;
 
 	img = IMG_Load(font);
 
-	w = img->w / 4;
-	h = img->h / 8;
+	w = img->w / gl.w;
+	h = img->h / gl.h;
 
 	for (x = 0; x < img->h; x += 8) {
 		for (y = 0; y < img->w; y += 4) {
-			ch = y / 4 + x / 8 * w;
-			//printf("%d\n", ch);
+			ch = 2 * (y / gl.w + x / gl.h * w);
+			for (i = 0; i < gl.h; i++) {
+				p = !!getpixel(img, x + i, y + 0);
+				p = !!getpixel(img, x + i, y + 1);
+				p = !!getpixel(img, x + i, y + 2);
+				p = !!getpixel(img, x + i, y + 3);
+			}
 		}
 	}
 
 	SDL_FreeSurface(img);
 }
-#endif
 
 void
 setfont(unsigned short *m)
