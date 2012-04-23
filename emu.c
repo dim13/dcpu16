@@ -1,4 +1,4 @@
-/* $Id: emu.c,v 1.2 2012/04/22 23:35:16 demon Exp $ */
+/* $Id: emu.c,v 1.3 2012/04/23 21:22:38 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -16,6 +16,7 @@
  */
 
 #include <stdio.h>
+#include <unistd.h>
 #include "dcpu16.h"
 
 static unsigned short *mem;
@@ -23,6 +24,7 @@ static unsigned short *reg;
 
 static unsigned short skip = 0;
 static unsigned short run = 1;
+static unsigned short cycle = 0;
 
 void ext(unsigned short *a, unsigned short *b);
 void set(unsigned short *a, unsigned short *b);
@@ -61,12 +63,12 @@ void (*op[nOpt])(unsigned short *a, unsigned short *b) = {
 };
 
 void jsr(unsigned short *a);
-void brk(unsigned short *a);
+void stop(unsigned short *a);
 
 void (*extop[nExt])(unsigned short *a) = {
-	[Res] = brk,	/* die on wrong opcode */
+	[Res] = stop,	/* die on wrong opcode */
 	[JSR] = jsr,
-	[BRK] = brk,
+	[BRK] = stop,
 };
 
 void
@@ -79,6 +81,7 @@ void
 set(unsigned short *a, unsigned short *b)
 {
 	*a = *b;
+	cycle += 1;
 }
 
 void
@@ -90,6 +93,7 @@ add(unsigned short *a, unsigned short *b)
 	reg[O] = tmp > 0xFFFF;
 
 	*a = tmp;
+	cycle += 2;
 }
 
 void
@@ -101,6 +105,7 @@ sub(unsigned short *a, unsigned short *b)
 	reg[O] = tmp < 0;
 
 	*a = tmp;
+	cycle += 2;
 }
 
 void
@@ -112,6 +117,7 @@ mul(unsigned short *a, unsigned short *b)
 	reg[O] = tmp >> 16;
 
 	*a = tmp;
+	cycle += 2;
 }
 
 void
@@ -126,6 +132,7 @@ div(unsigned short *a, unsigned short *b)
 		reg[O] = ((tmp << 16) / *b);
 		*a /= *b;
 	}
+	cycle += 3;
 }
 
 void
@@ -135,6 +142,7 @@ mod(unsigned short *a, unsigned short *b)
 		*a = 0;
 	else
 		*a %= *b;
+	cycle += 3;
 }
 
 void
@@ -144,6 +152,7 @@ shl(unsigned short *a, unsigned short *b)
 
 	reg[O] = ((tmp << *b) >> 16);
 	*a <<= *b;
+	cycle += 2;
 }
 
 void
@@ -153,48 +162,56 @@ shr(unsigned short *a, unsigned short *b)
 
 	reg[O] = ((tmp << 16) >> *b);
 	*a >>= *b;
+	cycle += 2;
 }
 
 void
 and(unsigned short *a, unsigned short *b)
 {
 	*a &= *b;
+	cycle += 1;
 }
 
 void
 bor(unsigned short *a, unsigned short *b)
 {
 	*a |= *b;
+	cycle += 1;
 }
 
 void
 xor(unsigned short *a, unsigned short *b)
 {
 	*a ^= *b;
+	cycle += 1;
 }
 
 void
 ife(unsigned short *a, unsigned short *b)
 {
 	skip = !(*a == *b);
+	cycle += skip ? 3 : 2;
 }
 
 void
 ifn(unsigned short *a, unsigned short *b)
 {
 	skip = !(*a != *b);
+	cycle += skip ? 3 : 2;
 }
 
 void
 ifg(unsigned short *a, unsigned short *b)
 {
 	skip = !(*a > *b);
+	cycle += skip ? 3 : 2;
 }
 
 void
 ifb(unsigned short *a, unsigned short *b)
 {
 	skip = !(*a & *b);
+	cycle += skip ? 3 : 2;
 }
 
 void
@@ -202,10 +219,11 @@ jsr(unsigned short *a)
 {
 	mem[--reg[SP]] = reg[PC];
 	reg[PC] = *a;
+	cycle += 2;
 }
 
 void
-brk(unsigned short *a)
+stop(unsigned short *a)
 {
 	run = 0;
 }
@@ -243,6 +261,7 @@ fetcharg(int a)
 	case 0x16:
 	case 0x17:
 		/* [next word + register] */
+		cycle += 1;
 		return &mem[mem[reg[PC]++] + reg[a - 0x10]];
 	case 0x18:
 		/* pop */
@@ -264,9 +283,11 @@ fetcharg(int a)
 		return &reg[O];
 	case 0x1e:
 		/* [next word] */
+		cycle += 1;
 		return &mem[mem[reg[PC]++]];
 	case 0x1f:
 		/* next word */
+		cycle += 1;
 		return &mem[reg[PC]++];
 	default:
 		/* literal */
@@ -285,6 +306,7 @@ step(unsigned short *m, unsigned short *r)
 
 	mem = m;
 	reg = r;
+	cycle = 0;
 
 	c = mem[reg[PC]++];
 	s = reg[SP];		/* store SP */
@@ -300,6 +322,8 @@ step(unsigned short *m, unsigned short *r)
 		reg[SP] = s;	/* restore SP on skipped opcode */
 	} else
 		op[o](a, b);
+
+	usleep(10 * cycle);	/* 100kHz */
 
 	return 0;
 }
