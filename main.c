@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.4 2012/04/18 03:47:31 demon Exp $ */
+/* $Id: main.c,v 1.5 2012/04/24 18:59:06 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -85,6 +85,8 @@ main(int argc, char **argv)
 
 	m = compile(fd, MEMSZ);
 	fclose(fd);
+	if (!m)
+		errx(1, "compilation errors");
 
 	emu(m, r);
 

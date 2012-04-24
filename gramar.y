@@ -1,4 +1,4 @@
-/* $Id: gramar.y,v 1.5 2012/04/24 18:16:32 demon Exp $ */
+/* $Id: gramar.y,v 1.6 2012/04/24 18:59:06 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -43,6 +43,7 @@ struct pair {
 static int sp = 0;
 static int rp = 0;
 static int pc = 0;
+static int haserrors = 0;
 
 unsigned short *buffer;
 char **label;
@@ -64,7 +65,7 @@ char **label;
 %token <ival> NUMBER
 %token <sval> STRING QSTRING
 
-%type <ival> register opcode extended value expr
+%type <ival> register opcode extended operand expr
 
 %left PLUS MINUS
 %left MULT
@@ -77,12 +78,12 @@ prog
 	;
 
 statement
-	: opcode value COMMA value
+	: opcode operand comma operand
 	{
 				popop(($4 << 10) | ($2 << 4) | $1);
 				popall();
 	}
-	| opcode value
+	| opcode operand
 	{
 				popop(($2 << 10) | $1);
 				popall();
@@ -91,20 +92,32 @@ statement
 	| DP STRING		{ addref($2); }
 	| DAT data		{ popall(); }
 	| ORG expr		{ pc = $2; }
+	| error			{ yyerror("statement"); }
 	;
 
 data
 	: /* empty */
 	| data block
-	| data COMMA block
+	| data comma block
+	;
+
+comma
+	: COMMA
+	| error			{ yyerror("comma"); }
 	;
 
 expr
-	: NUMBER		{ $$ = $1; }
+	: NUMBER	
+	{
+				if ($1 > 0xFFFF)
+					yyerror("integer too big");
+				$$ = $1;
+	}
 	| expr PLUS expr	{ $$ = $1 + $3; }
 	| expr MINUS expr	{ $$ = $1 - $3; }
 	| expr MULT expr	{ $$ = $1 * $3; }
 	| LPAR expr RPAR	{ $$ = $2; }
+	| error			{ yyerror("expr"); }
 	;
 
 block
@@ -118,7 +131,7 @@ block
 	| expr			{ push($1, NULL); }
 	;
 
-value
+operand
 	: register		{ $$ = $1; }
 	| LBR register RBR	{ $$ = 0x08 + $2; }
 	| POP			{ $$ = 0x18; }
@@ -182,6 +195,7 @@ register
 	| Z			{ $$ = 0x05; }
 	| I			{ $$ = 0x06; }
 	| J			{ $$ = 0x07; }
+	| error			{ yyerror("register"); }
 	; 
 
 opcode	
@@ -201,6 +215,7 @@ opcode
 	| IFN			{ $$ = 0x0d; }
 	| IFG			{ $$ = 0x0e; }
 	| IFB			{ $$ = 0x0f; }
+	| error			{ yyerror("opcode"); }
 	;
 
 extended
@@ -216,7 +231,7 @@ void
 yyerror(const char *s)
 {
 	fprintf(stderr, "Line %d: %s\n", yylineno, s);
-	exit(1);
+	haserrors = 1;
 }
 
 void
@@ -291,6 +306,11 @@ compile(FILE *fd, size_t sz)
 	free(ref);
 	free(stack);
 	free(label);
+
+	if (haserrors) {
+		free(buffer);
+		buffer = NULL;
+	}
 
 	return buffer;
 }
