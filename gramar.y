@@ -1,4 +1,4 @@
-/* $Id: gramar.y,v 1.4 2012/04/22 23:35:16 demon Exp $ */
+/* $Id: gramar.y,v 1.5 2012/04/24 18:16:32 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -57,7 +57,7 @@ char **label;
 %token A B C X Y Z I J
 %token POP PEEK PUSH SP PC O
 %token SET ADD SUB MUL DIV MOD SHL SHR AND BOR XOR IFE IFN IFG IFB
-%token DAT JSR BRK ORG JMP
+%token NOP JSR BRK DAT ORG
 %token LBR RBR LBRACE RBRACE LPAR RPAR
 %token COMMA DP PLUS MINUS MULT
 %token DOT HASH MACRO INCLUDE
@@ -204,7 +204,8 @@ opcode
 	;
 
 extended
-	: JSR			{ $$ = 0x01; }
+	: NOP			{ $$ = 0x00; }
+	| JSR			{ $$ = 0x01; }
 	| BRK			{ $$ = 0x02; }
 	;
 

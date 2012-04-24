@@ -1,4 +1,4 @@
-/* $Id: emu.c,v 1.4 2012/04/23 21:34:49 demon Exp $ */
+/* $Id: emu.c,v 1.5 2012/04/24 18:16:32 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -62,11 +62,12 @@ void (*op[nOpt])(unsigned short *a, unsigned short *b) = {
 	[IFB] = ifb,
 };
 
+void nop(unsigned short *a);
 void jsr(unsigned short *a);
 void stop(unsigned short *a);
 
 void (*extop[nExt])(unsigned short *a) = {
-	[Res] = stop,	/* die on wrong opcode */
+	[NOP] = nop,
 	[JSR] = jsr,
 	[BRK] = stop,
 };
@@ -212,6 +213,12 @@ ifb(unsigned short *a, unsigned short *b)
 {
 	skip = !(*a & *b);
 	cycle += 2 + skip;
+}
+
+void
+nop(unsigned short *a)
+{
+	cycle += 1;
 }
 
 void
