@@ -1,4 +1,4 @@
-/* $Id: gui.c,v 1.14 2012/04/25 15:40:46 demon Exp $ */
+/* $Id: gui.c,v 1.15 2012/04/25 15:52:13 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -26,9 +26,9 @@
 SDL_Surface *screen;
 SDL_Surface *scratch;
 
-SDL_Rect draw = { 16, 12, 128, 96 };
-SDL_Rect scr = { 0, 0, 160, 120 };
-SDL_Rect real = { 0, 0, 640, 480 };
+SDL_Rect draw = { 16, 16, 128, 96 };
+SDL_Rect scr = { 0, 0, 160, 128 };
+SDL_Rect real = { 0, 0, 480, 384 };
 SDL_Rect gl = { 0, 0, 4, 8 };
 
 SDL_Color color[0x10] = {
