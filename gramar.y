@@ -1,4 +1,4 @@
-/* $Id: gramar.y,v 1.6 2012/04/24 18:59:06 demon Exp $ */
+/* $Id: gramar.y,v 1.7 2012/04/25 10:11:35 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -18,6 +18,7 @@
 %{
 #include <sys/queue.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -25,7 +26,7 @@ extern int yylineno;
 extern FILE *yyin;
 int yylex(void);
 int yyparse(void);
-void yyerror(const char *);
+void yyerror(const char *, ...);
 void push(int, char *);
 void popop(int);
 void popall(void);
@@ -37,6 +38,7 @@ extern int yydebug;
 
 struct pair {
 	unsigned short val;
+	int lineno;
 	char *label;
 } *stack, *ref;
 
@@ -46,7 +48,10 @@ static int pc = 0;
 static int haserrors = 0;
 
 unsigned short *buffer;
-char **label;
+struct label {
+	char *label;
+	int lineno;
+} *label;
 
 %}
 
@@ -65,7 +70,7 @@ char **label;
 %token <ival> NUMBER
 %token <sval> STRING QSTRING
 
-%type <ival> register opcode extended operand expr
+%type <ival> register opcode operand expr extended noop
 
 %left PLUS MINUS
 %left MULT
@@ -80,30 +85,42 @@ prog
 statement
 	: opcode operand comma operand
 	{
+				if ($1 == 0x05 && $4 == 0x20)
+					yyerror("division by zero");
 				popop(($4 << 10) | ($2 << 4) | $1);
 				popall();
 	}
-	| opcode operand
+	| extended operand
 	{
-				popop(($2 << 10) | $1);
+				popop(($2 << 10) | ($1 << 4));
 				popall();
 	}
-	| opcode		{ popop($1); }
+	| noop			{ popop($1 << 4); }
 	| DP STRING		{ addref($2); }
 	| DAT data		{ popall(); }
 	| ORG expr		{ pc = $2; }
-	| error			{ yyerror("statement"); }
+	| error
 	;
 
 data
 	: /* empty */
-	| data block
 	| data comma block
 	;
 
 comma
-	: COMMA
-	| error			{ yyerror("comma"); }
+	: /* empty */		{ yyerror("missing comma"); }
+	| COMMA
+	;
+
+block
+	: QSTRING
+	{
+				char *s = $1;
+				while (*s)
+					push(*s++, NULL);
+	}
+	| STRING		{ push(0, $1); }
+	| expr			{ push($1, NULL); }
 	;
 
 expr
@@ -117,18 +134,6 @@ expr
 	| expr MINUS expr	{ $$ = $1 - $3; }
 	| expr MULT expr	{ $$ = $1 * $3; }
 	| LPAR expr RPAR	{ $$ = $2; }
-	| error			{ yyerror("expr"); }
-	;
-
-block
-	: QSTRING
-	{
-				char *s = $1;
-				while (*s)
-					push(*s++, NULL);
-	}
-	| STRING		{ push(0, $1); }
-	| expr			{ push($1, NULL); }
 	;
 
 operand
@@ -195,12 +200,10 @@ register
 	| Z			{ $$ = 0x05; }
 	| I			{ $$ = 0x06; }
 	| J			{ $$ = 0x07; }
-	| error			{ yyerror("register"); }
 	; 
 
 opcode	
-	: extended		{ $$ = $1 << 4; }
-	| SET			{ $$ = 0x01; }
+	: SET			{ $$ = 0x01; }
 	| ADD			{ $$ = 0x02; }
 	| SUB			{ $$ = 0x03; }
 	| MUL			{ $$ = 0x04; }
@@ -215,12 +218,14 @@ opcode
 	| IFN			{ $$ = 0x0d; }
 	| IFG			{ $$ = 0x0e; }
 	| IFB			{ $$ = 0x0f; }
-	| error			{ yyerror("opcode"); }
 	;
 
 extended
+	: JSR			{ $$ = 0x01; }
+	;
+
+noop
 	: NOP			{ $$ = 0x00; }
-	| JSR			{ $$ = 0x01; }
 	| BRK			{ $$ = 0x02; }
 	;
 
@@ -228,9 +233,15 @@ extended
 %%
 
 void
-yyerror(const char *s)
+yyerror(const char *s, ...)
 {
-	fprintf(stderr, "Line %d: %s\n", yylineno, s);
+	va_list ap;
+
+	va_start(ap, s);
+	fprintf(stderr, "Line %d: ", yylineno);
+	vfprintf(stderr, s, ap);
+	fprintf(stderr, "\n");
+	va_end(ap);
 	haserrors = 1;
 }
 
@@ -238,6 +249,7 @@ void
 push(int i, char *s)
 {
 	stack[sp].val = i;
+	stack[sp].lineno = yylineno;
 	stack[sp++].label = s;
 }
 
@@ -254,7 +266,8 @@ popall(void)
 
 	while (sp > 0) {
 		buffer[pc] = stack[n - sp].val;
-		label[pc++] = stack[n - sp--].label;
+		label[pc].label = stack[n - sp].label;
+		label[pc++].lineno = stack[n - sp--].lineno;
 	}
 }
 
@@ -262,18 +275,21 @@ void
 addref(char *s)
 {
 	ref[rp].label = s;
+	ref[rp].lineno = yylineno;
 	ref[rp++].val = pc;
 }
 
 int
-findref(char *s)
+findref(struct label *l)
 {
 	int i;
 
 	for (i = 0; i < rp; i++)
-		if (strcmp(ref[i].label, s) == 0)
+		if (strcmp(ref[i].label, l->label) == 0)
 			return ref[i].val;
 
+	yylineno = l->lineno;
+	yyerror("missing label reference: %s", l->label);
 	return 0;
 }
 
@@ -283,15 +299,15 @@ restorerefs(void)
 	int i;
 
 	for (i = 0; i < pc; i++)
-		if (label[i])
-			buffer[i] = findref(label[i]);
+		if (label[i].label)
+			buffer[i] = findref(&label[i]);
 }
 
 unsigned short *
 compile(FILE *fd, size_t sz)
 {
 	buffer = calloc(sz, sizeof(unsigned short));
-	label = calloc(sz, sizeof(char *));
+	label = calloc(sz, sizeof(struct label));
 	stack = calloc(sz, sizeof(struct pair));
 	ref = calloc(sz, sizeof(struct pair));
 

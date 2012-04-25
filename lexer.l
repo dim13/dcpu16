@@ -1,4 +1,4 @@
-/* $Id: lexer.l,v 1.3 2012/04/24 18:16:32 demon Exp $ */
+/* $Id: lexer.l,v 1.4 2012/04/25 10:11:35 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -26,7 +26,8 @@
 
 %x COMMENT QUOTED
 
-WS	[ \t\r\n]+
+WS	[ \t]+
+NL	[\r\n]+
 STR	[A-Za-z0-9_]+
 HEX	0x[0-9A-Fa-f]+
 OCT	0[0-7]+
@@ -91,7 +92,7 @@ DEC	[0-9]+
 [Ii][Nn][Cc][Ll][Uu][Dd][Ee]	return INCLUDE;
 
 ";"			BEGIN(COMMENT);
-<COMMENT>[\r\n]+	BEGIN(INITIAL);
+<INITIAL,COMMENT>{NL}	BEGIN(INITIAL);
 <COMMENT>.		/* eat comments */
 
 "\""			BEGIN(QUOTED);
