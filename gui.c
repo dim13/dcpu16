@@ -1,4 +1,4 @@
-/* $Id: gui.c,v 1.13 2012/04/25 12:32:46 demon Exp $ */
+/* $Id: gui.c,v 1.14 2012/04/25 15:40:46 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -24,9 +24,11 @@
 #include "dcpu16.h"
 
 SDL_Surface *screen;
+SDL_Surface *scratch;
 
 SDL_Rect draw = { 16, 12, 128, 96 };
 SDL_Rect scr = { 0, 0, 160, 120 };
+SDL_Rect real = { 0, 0, 640, 480 };
 SDL_Rect gl = { 0, 0, 4, 8 };
 
 SDL_Color color[0x10] = {
@@ -65,7 +67,7 @@ getpixel(SDL_Surface *s, int x, int y)
 }
 
 void
-drawglyph(SDL_Surface *screen, int x, int y, unsigned short *m)
+drawglyph(SDL_Surface *s, int x, int y, unsigned short *m)
 {
 	SDL_Rect to;
 	Uint8 bg, fg, c, i;
@@ -83,31 +85,29 @@ drawglyph(SDL_Surface *screen, int x, int y, unsigned short *m)
 
 	for (i = 0; i < 8; i++) {
 		c = m[CHARS + ch] & (0x0100 << i) ? fg : bg;
-		setpixel(screen, to.x + 0, to.y + i, c);
+		setpixel(s, to.x + 0, to.y + i, c);
 
 		c = m[CHARS + ch] & (0x0001 << i) ? fg : bg;
-		setpixel(screen, to.x + 1, to.y + i, c);
+		setpixel(s, to.x + 1, to.y + i, c);
 
 		c = m[CHARS + ch + 1] & (0x0100 << i) ? fg : bg;
-		setpixel(screen, to.x + 2, to.y + i, c);
+		setpixel(s, to.x + 2, to.y + i, c);
 
 		c = m[CHARS + ch + 1] & (0x0001 << i) ? fg : bg;
-		setpixel(screen, to.x + 3, to.y + i, c);
+		setpixel(s, to.x + 3, to.y + i, c);
 	}
 }
 
 void
-drawscreen(SDL_Surface *screen, unsigned short *m)
+drawscreen(SDL_Surface *s, unsigned short *m)
 {
 	int x, y;
 
-	SDL_FillRect(screen, &scr, m[BORDER] & 0x0f);
+	SDL_FillRect(s, &scr, m[BORDER] & 0x0f);
 
 	for (x = 0; x < 32; x++)
 		for (y = 0; y < 12; y++)
-			drawglyph(screen, x, y, m);
-
-	SDL_Flip(screen);
+			drawglyph(s, x, y, m);
 }
 
 int
@@ -188,19 +188,27 @@ guiemu(unsigned short *m, unsigned short *r)
 {
 	int c, n = 0;
 
-	screen = SDL_SetVideoMode(scr.w, scr.h, 8, SDL_HWSURFACE|SDL_HWPALETTE);
+	screen = SDL_SetVideoMode(real.w, real.h, 8, SDL_HWSURFACE|SDL_HWPALETTE);
 	SDL_SetColors(screen, color, 0, 16);
+
+	scratch = SDL_CreateRGBSurface(SDL_HWSURFACE, scr.w, scr.h, 8, 0, 0, 0, 0);
+	SDL_SetColors(scratch, color, 0, 16);
 
 	loadfont(m, "font.xpm");
 
 	while ((c = step(m, r)) != -1) {
 		if ((n += c) < 100)
 			continue;
-		drawscreen(screen, m);
+		drawscreen(scratch, m);
+
+		SDL_SoftStretch(scratch, &scr, screen, &real);
+		SDL_Flip(screen);
+
 		n = 0;
 		if (keyboard(m) == -1)
 			break;
 	}
 
+	SDL_FreeSurface(scratch);
 	SDL_FreeSurface(screen);
 }
