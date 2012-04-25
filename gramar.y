@@ -1,4 +1,4 @@
-/* $Id: gramar.y,v 1.7 2012/04/25 10:11:35 demon Exp $ */
+/* $Id: gramar.y,v 1.8 2012/04/25 10:40:36 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -83,7 +83,7 @@ prog
 	;
 
 statement
-	: opcode operand comma operand
+	: opcode operand COMMA operand
 	{
 				if ($1 == 0x05 && $4 == 0x20)
 					yyerror("division by zero");
@@ -104,12 +104,8 @@ statement
 
 data
 	: /* empty */
-	| data comma block
-	;
-
-comma
-	: /* empty */		{ yyerror("missing comma"); }
-	| COMMA
+	| data block
+	| data COMMA block
 	;
 
 block
