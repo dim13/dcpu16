@@ -1,4 +1,4 @@
-/* $Id: emu.c,v 1.5 2012/04/24 18:16:32 demon Exp $ */
+/* $Id: emu.c,v 1.6 2012/04/25 11:51:08 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -75,7 +75,8 @@ void (*extop[nExt])(unsigned short *a) = {
 void
 ext(unsigned short *a, unsigned short *b)
 {
-	extop[*a](b);
+	if (*a < nExt)
+		extop[*a](b);
 }
 
 void
