@@ -1,4 +1,4 @@
-/* $Id: gui.c,v 1.11 2012/04/23 21:44:33 demon Exp $ */
+/* $Id: gui.c,v 1.12 2012/04/25 11:39:12 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -22,7 +22,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "dcpu16.h"
-#include "font.h"
 
 SDL_Surface *screen;
 
@@ -155,7 +154,7 @@ keyboard(unsigned short *m)
 void
 loadfont(unsigned short *m, char *font)
 {
-	int w, h, x, y, ch, i, p;
+	int w, h, x, y, ch, i;
 
 	SDL_Surface *img;
 	SDL_Rect frame;
@@ -165,32 +164,25 @@ loadfont(unsigned short *m, char *font)
 	w = img->w / gl.w;
 	h = img->h / gl.h;
 
-	for (x = 0; x < img->h; x += 8) {
-		for (y = 0; y < img->w; y += 4) {
-			ch = 2 * (y / gl.w + x / gl.h * w);
+	for (x = 0; x < w; ++x) {
+		for (y = 0; y < h; ++y) {
+			ch = 2 * (x + y * w);
+			frame.x = x * gl.w;
+			frame.y = y * gl.h;
 			for (i = 0; i < gl.h; i++) {
-				p = !!getpixel(img, x + i, y + 0);
-				p = !!getpixel(img, x + i, y + 1);
-				p = !!getpixel(img, x + i, y + 2);
-				p = !!getpixel(img, x + i, y + 3);
+				if (getpixel(img, frame.x + 0, frame.y + i))
+					m[CHARS + ch + 0] |= (0x0100 << i);
+				if (getpixel(img, frame.x + 1, frame.y + i))
+					m[CHARS + ch + 0] |= (0x0001 << i);
+				if (getpixel(img, frame.x + 2, frame.y + i))
+					m[CHARS + ch + 1] |= (0x0100 << i);
+				if (getpixel(img, frame.x + 3, frame.y + i))
+					m[CHARS + ch + 1] |= (0x0001 << i);
 			}
 		}
 	}
 
 	SDL_FreeSurface(img);
-}
-
-void
-setfont(unsigned short *m)
-{
-	int i;
-
-	for (i = 0; i < 0x80; i++) {
-		m[CHARS + 2 * i] = atari_small[i][0];
-		m[CHARS + 2 * i + 1] = atari_small[i][1];
-	}
-
-	m[BORDER] = 0;		/* set default bg to black */
 }
 
 void
@@ -201,7 +193,7 @@ guiemu(unsigned short *m, unsigned short *r)
 	screen = SDL_SetVideoMode(scr.w, scr.h, 8, SDL_HWSURFACE|SDL_HWPALETTE);
 	SDL_SetColors(screen, color, 0, 16);
 
-	setfont(m);
+	loadfont(m, "font.xpm");
 
 	while ((c = step(m, r)) != -1) {
 		if ((n += c) < 100)
