@@ -1,4 +1,4 @@
-/* $Id: gramar.y,v 1.8 2012/04/25 10:40:36 demon Exp $ */
+/* $Id: gramar.y,v 1.9 2012/04/25 10:49:55 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -85,8 +85,6 @@ prog
 statement
 	: opcode operand COMMA operand
 	{
-				if ($1 == 0x05 && $4 == 0x20)
-					yyerror("division by zero");
 				popop(($4 << 10) | ($2 << 4) | $1);
 				popall();
 	}
