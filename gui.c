@@ -1,4 +1,4 @@
-/* $Id: gui.c,v 1.15 2012/04/25 15:52:13 demon Exp $ */
+/* $Id: gui.c,v 1.16 2012/04/25 17:20:12 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -70,30 +70,28 @@ void
 drawglyph(SDL_Surface *s, int x, int y, unsigned short *m)
 {
 	SDL_Rect to;
-	Uint8 bg, fg, c, i;
-	unsigned short ch;
+	Uint8 color[2], c, i;
+	unsigned short ch, *p;
 
 	ch = m[DISP + y * 32 + x];
-	bg = (ch >> 8) & 0x0f;
-	fg = (ch >> 12) & 0x0f;
+	color[0] = (ch >> 8) & 0x0f;		/* bg */
+	color[1] = (ch >> 12) & 0x0f;		/* fg */
 	ch = (ch & 0x7f) << 1;
+	p = &m[CHARS + ch];
 
 	to.w = gl.w;
 	to.h = gl.h;
 	to.x = draw.x + x * to.w;
 	to.y = draw.y + y * to.h;
 
-	for (i = 0; i < 8; i++) {
-		c = m[CHARS + ch] & (0x0100 << i) ? fg : bg;
+	for (i = 0; i < gl.h; i++) {
+		c = color[!!(*p & (0x0100 << i))];
 		setpixel(s, to.x + 0, to.y + i, c);
-
-		c = m[CHARS + ch] & (0x0001 << i) ? fg : bg;
+		c = color[!!(*p & (0x0001 << i))];
 		setpixel(s, to.x + 1, to.y + i, c);
-
-		c = m[CHARS + ch + 1] & (0x0100 << i) ? fg : bg;
+		c = color[!!(*(p + 1) & (0x0100 << i))];
 		setpixel(s, to.x + 2, to.y + i, c);
-
-		c = m[CHARS + ch + 1] & (0x0001 << i) ? fg : bg;
+		c = color[!!(*(p + 1) & (0x0001 << i))];
 		setpixel(s, to.x + 3, to.y + i, c);
 	}
 }
@@ -153,6 +151,7 @@ void
 loadfont(unsigned short *m, char *font)
 {
 	int w, h, x, y, ch, i;
+	unsigned short *p;
 
 	SDL_Surface *img;
 	SDL_Rect frame;
@@ -167,15 +166,16 @@ loadfont(unsigned short *m, char *font)
 			ch = 2 * (x + y * w);
 			frame.x = x * gl.w;
 			frame.y = y * gl.h;
+			p = &m[CHARS + ch];
 			for (i = 0; i < gl.h; i++) {
 				if (getpixel(img, frame.x + 0, frame.y + i))
-					m[CHARS + ch + 0] |= (0x0100 << i);
+					*p |= (0x0100 << i);
 				if (getpixel(img, frame.x + 1, frame.y + i))
-					m[CHARS + ch + 0] |= (0x0001 << i);
+					*p |= (0x0001 << i);
 				if (getpixel(img, frame.x + 2, frame.y + i))
-					m[CHARS + ch + 1] |= (0x0100 << i);
+					*(p + 1) |= (0x0100 << i);
 				if (getpixel(img, frame.x + 3, frame.y + i))
-					m[CHARS + ch + 1] |= (0x0001 << i);
+					*(p + 1) |= (0x0001 << i);
 			}
 		}
 	}
