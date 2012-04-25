@@ -1,4 +1,4 @@
-/* $Id: emu.c,v 1.9 2012/04/25 23:19:58 demon Exp $ */
+/* $Id: emu.c,v 1.10 2012/04/25 23:23:00 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -47,6 +47,12 @@ stop(unsigned short *a)
 	cycle += 1;
 }
 
+void
+hcf(unsigned short *a)
+{
+	/* TODO */
+	cycle += 9;
+}
 
 void
 intr(unsigned short *a)
@@ -94,6 +100,7 @@ void (*extop[nExt])(unsigned short *a) = {
 	[NOP] = nop,
 	[JSR] = jsr,
 	[BRK] = stop,
+	[HCF] = hcf,
 	[INT] = intr,
 	[IAG] = iag,
 	[IAS] = ias,
