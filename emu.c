@@ -1,4 +1,4 @@
-/* $Id: emu.c,v 1.7 2012/04/25 23:06:58 demon Exp $ */
+/* $Id: emu.c,v 1.8 2012/04/25 23:18:32 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -337,7 +337,7 @@ adx(unsigned short *b, unsigned short *a)
 }
 
 void
-sux(unsigned short *b, unsigned short *a)
+sbx(unsigned short *b, unsigned short *a)
 {
 	int tmp = *b;
 
@@ -373,7 +373,7 @@ void (*op[nOpt])(unsigned short *a, unsigned short *b) = {
 	[IFU] = ifu,
 	[IFL] = ifl,
 	[ADX] = adx,
-	[SUX] = sux,
+	[SBX] = sbx,
 };
 
 unsigned short *

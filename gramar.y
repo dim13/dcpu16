@@ -1,4 +1,4 @@
-/* $Id: gramar.y,v 1.10 2012/04/25 23:06:58 demon Exp $ */
+/* $Id: gramar.y,v 1.11 2012/04/25 23:18:32 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -65,7 +65,7 @@ struct label {
 %token PUSH POP PEEK PICK SP PC EX
 
 %token SET ADD SUB MUL MLI DIV DVI MOD AND BOR XOR SHR ASR SHL MVI
-%token IFB IFC IFE IFN IFG IFA IFL IFU ADX SUX
+%token IFB IFC IFE IFN IFG IFA IFL IFU ADX SBX
 %token NOP BRK DAT ORG
 %token JSR INT IAG IAS HWN HWQ HWI
 %token LBR RBR LBRACE RBRACE LPAR RPAR
@@ -226,7 +226,7 @@ opcode
 	| IFL			{ $$ = 0x16; }
 	| IFU			{ $$ = 0x17; }
 	| ADX			{ $$ = 0x1a; }
-	| SUX			{ $$ = 0x1b; }
+	| SBX			{ $$ = 0x1b; }
 	;
 
 extended
