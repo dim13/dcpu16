@@ -1,4 +1,4 @@
-/* $Id: emu.c,v 1.8 2012/04/25 23:18:32 demon Exp $ */
+/* $Id: emu.c,v 1.9 2012/04/25 23:19:58 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -261,7 +261,7 @@ shl(unsigned short *b, unsigned short *a)
 }
 
 void
-mvi(unsigned short *b, unsigned short *a)
+sti(unsigned short *b, unsigned short *a)
 {
 	*b = *a;
 	++reg[I];
@@ -363,7 +363,7 @@ void (*op[nOpt])(unsigned short *a, unsigned short *b) = {
 	[SHR] = shr,
 	[ASR] = asr,
 	[SHL] = shl,
-	[MVI] = mvi,
+	[STI] = sti,
 	[IFB] = ifb,
 	[IFC] = ifc,
 	[IFE] = ife,

@@ -1,4 +1,4 @@
-/* $Id: dcpu16.h,v 1.7 2012/04/25 23:18:32 demon Exp $ */
+/* $Id: dcpu16.h,v 1.8 2012/04/25 23:19:58 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -22,7 +22,7 @@ enum {	A, B, C, X, Y, Z, I, J, PC, SP, EX, IA,
 	Aux, nReg };
 
 enum {	EXT, SET, ADD, SUB, MUL, MLI, DIV, DVI,
-	MOD, AND, BOR, XOR, SHR, ASR, SHL, MVI,
+	MOD, AND, BOR, XOR, SHR, ASR, SHL, STI,
 	IFB, IFC, IFE, IFN, IFG, IFA, IFL, IFU,
 	ADX = 0x1a, SBX, nOpt };
 
