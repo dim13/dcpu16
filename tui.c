@@ -1,4 +1,4 @@
-/* $Id: tui.c,v 1.3 2012/04/18 03:47:31 demon Exp $ */
+/* $Id: tui.c,v 1.4 2012/04/25 10:49:39 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -127,7 +127,7 @@ init_colors()
 void
 tuiemu(unsigned short *m, unsigned short *r)
 {
-	int ch, n = 0;
+	int ch;
 
 	initscr();
 
@@ -152,9 +152,6 @@ tuiemu(unsigned short *m, unsigned short *r)
 	m[KEYP] = KEYB;
 
 	while (step(m, r) != -1) {
-		if (n % 100)
-			continue;
-
 		dumpmem(m);
 		dumpdisp(m);
 		dumpreg(m, r);
