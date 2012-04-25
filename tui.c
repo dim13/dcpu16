@@ -1,4 +1,4 @@
-/* $Id: tui.c,v 1.4 2012/04/25 10:49:39 demon Exp $ */
+/* $Id: tui.c,v 1.5 2012/04/25 23:06:58 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -104,7 +104,7 @@ dumpreg(unsigned short *mem, unsigned short *reg)
 
 	mvwprintw(regs, 0, 16, "PC: %4.4x [%4.4x]", reg[PC], mem[reg[PC]]);
 	mvwprintw(regs, 1, 16, "SP: %4.4x [%4.4x]", reg[SP], mem[reg[SP]]);
-	mvwprintw(regs, 2, 16, " O: %4.4x [%4.4x]", reg[O], mem[reg[O]]);
+	mvwprintw(regs, 2, 16, "EX: %4.4x [%4.4x]", reg[EX], mem[reg[EX]]);
 
 	wnoutrefresh(regs);
 }
@@ -132,7 +132,7 @@ tuiemu(unsigned short *m, unsigned short *r)
 	initscr();
 
 	noecho();
-	nodelay(stdscr, TRUE);
+//	nodelay(stdscr, TRUE);
 
 	start_color();
 	init_colors();

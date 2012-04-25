@@ -1,4 +1,4 @@
-/* $Id: lexer.l,v 1.4 2012/04/25 10:11:35 demon Exp $ */
+/* $Id: lexer.l,v 1.5 2012/04/25 23:06:58 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -39,31 +39,48 @@ DEC	[0-9]+
 [Aa][Dd][Dd]		return ADD;
 [Ss][Uu][Bb]		return SUB;
 [Mm][Uu][Ll]		return MUL;
+[Mm][Ll][Ii]		return MLI;
 [Dd][Ii][Vv]		return DIV;
+[Dd][Vv][Ii]		return DVI;
 [Mm][Oo][Dd]		return MOD;
-[Ss][Hh][Ll]		return SHL;
-[Ss][Hh][Rr]		return SHR;
 [Aa][Nn][Dd]		return AND;
 [Bb][Oo][Rr]		return BOR;
 [Xx][Oo][Rr]		return XOR;
+[Ss][Hh][Rr]		return SHR;
+[Aa][Ss][Rr]		return ASR;
+[Ss][Hh][Ll]		return SHL;
+[Mm][Vv][Ii]		return MVI;
+[Ii][Ff][Bb]		return IFB;
+[Ii][Ff][Cc]		return IFC;
 [Ii][Ff][Ee]		return IFE;
 [Ii][Ff][Nn]		return IFN;
 [Ii][Ff][Gg]		return IFG;
-[Ii][Ff][Bb]		return IFB;
+[Ii][Ff][Aa]		return IFA;
+[Ii][Ff][Ll]		return IFL;
+[Ii][Ff][Uu]		return IFU;
+[Aa][Dd][Xx]		return ADX;
+[Ss][Uu][Xx]		return SUX;
 
 [Nn][Oo][Pp]		return NOP;
 [Jj][Ss][Rr]		return JSR;
 [Bb][Rr][Kk]		return BRK;
+[Ii][Nn][Tt]		return INT;
+[Ii][Aa][Gg]		return IAG;
+[Ii][Aa][Ss]		return IAS;
+[Hh][Ww][Nn]		return HWN;
+[Hh][Ww][Qq]		return HWQ;
+[Hh][Ww][Ii]		return HWI;
 
 [Dd][Aa][Tt]		return DAT;
 [Oo][Rr][Gg]		return ORG;
 
+[Pp][Uu][Ss][Hh]	return PUSH;
 [Pp][Oo][Pp]		return POP;
 [Pp][Ee][Ee][Kk]	return PEEK;
-[Pp][Uu][Ss][Hh]	return PUSH;
+[Pp][Ii][Cc][Kk]	return PICK;
 [Ss][Pp]		return SP;
 [Pp][Cc]		return PC;
-[Oo]			return O;
+[Ee][Xx]		return EX;
 
 [Aa]			return A;
 [Bb]			return B;

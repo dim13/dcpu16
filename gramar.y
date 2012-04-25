@@ -1,4 +1,4 @@
-/* $Id: gramar.y,v 1.9 2012/04/25 10:49:55 demon Exp $ */
+/* $Id: gramar.y,v 1.10 2012/04/25 23:06:58 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -61,9 +61,13 @@ struct label {
 };
 
 %token A B C X Y Z I J
-%token POP PEEK PUSH SP PC O
-%token SET ADD SUB MUL DIV MOD SHL SHR AND BOR XOR IFE IFN IFG IFB
-%token NOP JSR BRK DAT ORG
+
+%token PUSH POP PEEK PICK SP PC EX
+
+%token SET ADD SUB MUL MLI DIV DVI MOD AND BOR XOR SHR ASR SHL MVI
+%token IFB IFC IFE IFN IFG IFA IFL IFU ADX SUX
+%token NOP BRK DAT ORG
+%token JSR INT IAG IAS HWN HWQ HWI
 %token LBR RBR LBRACE RBRACE LPAR RPAR
 %token COMMA DP PLUS MINUS MULT
 %token DOT HASH MACRO INCLUDE
@@ -85,15 +89,15 @@ prog
 statement
 	: opcode operand COMMA operand
 	{
-				popop(($4 << 10) | ($2 << 4) | $1);
+				popop(($4 << 10) | ($2 << 5) | $1);
 				popall();
 	}
 	| extended operand
 	{
-				popop(($2 << 10) | ($1 << 4));
+				popop(($2 << 10) | ($1 << 5));
 				popall();
 	}
-	| noop			{ popop($1 << 4); }
+	| noop			{ popop($1 << 5); }
 	| DP STRING		{ addref($2); }
 	| DAT data		{ popall(); }
 	| ORG expr		{ pc = $2; }
@@ -133,12 +137,13 @@ expr
 operand
 	: register		{ $$ = $1; }
 	| LBR register RBR	{ $$ = 0x08 + $2; }
+	| PUSH			{ $$ = 0x18; }
 	| POP			{ $$ = 0x18; }
 	| PEEK			{ $$ = 0x19; }
-	| PUSH			{ $$ = 0x1a; }
+	| PICK			{ $$ = 0x1a; }
 	| SP			{ $$ = 0x1b; }
 	| PC			{ $$ = 0x1c; }
-	| O			{ $$ = 0x1d; }
+	| EX			{ $$ = 0x1d; }
 	| LBR expr RBR
 	{
 				$$ = 0x1e;
@@ -201,21 +206,37 @@ opcode
 	| ADD			{ $$ = 0x02; }
 	| SUB			{ $$ = 0x03; }
 	| MUL			{ $$ = 0x04; }
-	| DIV			{ $$ = 0x05; }
-	| MOD			{ $$ = 0x06; }
-	| SHL			{ $$ = 0x07; }
-	| SHR			{ $$ = 0x08; }
+	| MLI			{ $$ = 0x05; }
+	| DIV			{ $$ = 0x06; }
+	| DVI			{ $$ = 0x07; }
+	| MOD			{ $$ = 0x08; }
 	| AND			{ $$ = 0x09; }
 	| BOR			{ $$ = 0x0a; }
 	| XOR			{ $$ = 0x0b; }
-	| IFE			{ $$ = 0x0c; }
-	| IFN			{ $$ = 0x0d; }
-	| IFG			{ $$ = 0x0e; }
-	| IFB			{ $$ = 0x0f; }
+	| SHR			{ $$ = 0x0c; }
+	| ASR			{ $$ = 0x0d; }
+	| SHL			{ $$ = 0x0e; }
+	| MVI			{ $$ = 0x0f; }
+	| IFB			{ $$ = 0x10; }
+	| IFC			{ $$ = 0x11; }
+	| IFE			{ $$ = 0x12; }
+	| IFN			{ $$ = 0x13; }
+	| IFG			{ $$ = 0x14; }
+	| IFA			{ $$ = 0x15; }
+	| IFL			{ $$ = 0x16; }
+	| IFU			{ $$ = 0x17; }
+	| ADX			{ $$ = 0x1a; }
+	| SUX			{ $$ = 0x1b; }
 	;
 
 extended
 	: JSR			{ $$ = 0x01; }
+	| INT			{ $$ = 0x08; }
+	| IAG			{ $$ = 0x09; }
+	| IAS			{ $$ = 0x0a; }
+	| HWN			{ $$ = 0x10; }
+	| HWQ			{ $$ = 0x11; }
+	| HWI			{ $$ = 0x12; }
 	;
 
 noop

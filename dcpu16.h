@@ -1,4 +1,4 @@
-/* $Id: dcpu16.h,v 1.5 2012/04/24 18:16:32 demon Exp $ */
+/* $Id: dcpu16.h,v 1.6 2012/04/25 23:06:58 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -18,12 +18,17 @@
 #ifndef _DCPU16_H
 #define _DCPU16_H
 
-enum { A, B, C, X, Y, Z, I, J, PC, SP, O, Aux, nReg };
+enum {	A, B, C, X, Y, Z, I, J, PC, SP, EX, IA,
+	Aux, nReg };
 
-enum { EXT, SET, ADD, SUB, MUL, DIV, MOD, SHL,
-	SHR, AND, BOR, XOR, IFE, IFN, IFG, IFB, nOpt };
+enum {	EXT, SET, ADD, SUB, MUL, MLI, DIV, DVI,
+	MOD, AND, BOR, XOR, SHR, ASR, SHL, MVI,
+	IFB, IFC, IFE, IFN, IFG, IFA, IFL, IFU,
+	ADX = 0x1a, SUX, nOpt };
 
-enum { NOP, JSR, BRK, nExt };
+enum {	NOP, JSR, BRK,
+	INT = 0x08, IAG, IAS,
+	HWN = 0x10, HWQ, HWI, nExt };
 
 #define MEMSZ	0x10000
 

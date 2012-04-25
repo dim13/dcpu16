@@ -1,4 +1,4 @@
-/* $Id: emu.c,v 1.6 2012/04/25 11:51:08 demon Exp $ */
+/* $Id: emu.c,v 1.7 2012/04/25 23:06:58 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -26,196 +26,6 @@ static unsigned short skip = 0;
 static unsigned short run = 1;
 static unsigned short cycle = 0;
 
-void ext(unsigned short *a, unsigned short *b);
-void set(unsigned short *a, unsigned short *b);
-void add(unsigned short *a, unsigned short *b);
-void sub(unsigned short *a, unsigned short *b);
-void mul(unsigned short *a, unsigned short *b);
-void div(unsigned short *a, unsigned short *b);
-void mod(unsigned short *a, unsigned short *b);
-void shl(unsigned short *a, unsigned short *b);
-void shr(unsigned short *a, unsigned short *b);
-void and(unsigned short *a, unsigned short *b);
-void bor(unsigned short *a, unsigned short *b);
-void xor(unsigned short *a, unsigned short *b);
-void ife(unsigned short *a, unsigned short *b);
-void ifn(unsigned short *a, unsigned short *b);
-void ifg(unsigned short *a, unsigned short *b);
-void ifb(unsigned short *a, unsigned short *b);
-
-void (*op[nOpt])(unsigned short *a, unsigned short *b) = {
-	[EXT] = ext,
-	[SET] = set,
-	[ADD] = add,
-	[SUB] = sub,
-	[MUL] = mul,
-	[DIV] = div,
-	[MOD] = mod,
-	[SHL] = shl,
-	[SHR] = shr,
-	[AND] = and,
-	[BOR] = bor,
-	[XOR] = xor,
-	[IFE] = ife,
-	[IFN] = ifn,
-	[IFG] = ifg,
-	[IFB] = ifb,
-};
-
-void nop(unsigned short *a);
-void jsr(unsigned short *a);
-void stop(unsigned short *a);
-
-void (*extop[nExt])(unsigned short *a) = {
-	[NOP] = nop,
-	[JSR] = jsr,
-	[BRK] = stop,
-};
-
-void
-ext(unsigned short *a, unsigned short *b)
-{
-	if (*a < nExt)
-		extop[*a](b);
-}
-
-void
-set(unsigned short *a, unsigned short *b)
-{
-	*a = *b;
-	cycle += 1;
-}
-
-void
-add(unsigned short *a, unsigned short *b)
-{
-	int tmp = *a;
-
-	tmp += *b;
-	reg[O] = tmp > 0xFFFF;
-
-	*a = tmp;
-	cycle += 2;
-}
-
-void
-sub(unsigned short *a, unsigned short *b)
-{
-	int tmp = *a;
-
-	tmp -= *b;
-	reg[O] = tmp < 0;
-
-	*a = tmp;
-	cycle += 2;
-}
-
-void
-mul(unsigned short *a, unsigned short *b)
-{
-	int tmp = *a;
-
-	tmp *= *b;
-	reg[O] = tmp >> 16;
-
-	*a = tmp;
-	cycle += 2;
-}
-
-void
-div(unsigned short *a, unsigned short *b)
-{
-	int tmp = *a;
-
-	if (*b == 0) {
-		reg[O] = 0;
-		*a = 0;
-	} else {
-		reg[O] = ((tmp << 16) / *b);
-		*a /= *b;
-	}
-	cycle += 3;
-}
-
-void
-mod(unsigned short *a, unsigned short *b)
-{
-	if (*b == 0)
-		*a = 0;
-	else
-		*a %= *b;
-	cycle += 3;
-}
-
-void
-shl(unsigned short *a, unsigned short *b)
-{
-	int tmp = *a;
-
-	reg[O] = ((tmp << *b) >> 16);
-	*a <<= *b;
-	cycle += 2;
-}
-
-void
-shr(unsigned short *a, unsigned short *b)
-{
-	int tmp = *a;
-
-	reg[O] = ((tmp << 16) >> *b);
-	*a >>= *b;
-	cycle += 2;
-}
-
-void
-and(unsigned short *a, unsigned short *b)
-{
-	*a &= *b;
-	cycle += 1;
-}
-
-void
-bor(unsigned short *a, unsigned short *b)
-{
-	*a |= *b;
-	cycle += 1;
-}
-
-void
-xor(unsigned short *a, unsigned short *b)
-{
-	*a ^= *b;
-	cycle += 1;
-}
-
-void
-ife(unsigned short *a, unsigned short *b)
-{
-	skip = !(*a == *b);
-	cycle += 2 + skip;
-}
-
-void
-ifn(unsigned short *a, unsigned short *b)
-{
-	skip = !(*a != *b);
-	cycle += 2 + skip;
-}
-
-void
-ifg(unsigned short *a, unsigned short *b)
-{
-	skip = !(*a > *b);
-	cycle += 2 + skip;
-}
-
-void
-ifb(unsigned short *a, unsigned short *b)
-{
-	skip = !(*a & *b);
-	cycle += 2 + skip;
-}
-
 void
 nop(unsigned short *a)
 {
@@ -227,17 +37,347 @@ jsr(unsigned short *a)
 {
 	mem[--reg[SP]] = reg[PC];
 	reg[PC] = *a;
-	cycle += 2;
+	cycle += 3;
 }
 
 void
 stop(unsigned short *a)
 {
 	run = 0;
+	cycle += 1;
 }
 
+
+void
+intr(unsigned short *a)
+{
+	/* TODO */
+	cycle += 4;
+}
+
+void
+iag(unsigned short *a)
+{
+	/* TODO */
+	cycle += 1;
+}
+
+void
+ias(unsigned short *a)
+{
+	/* TODO */
+	cycle += 1;
+}
+
+void
+hwn(unsigned short *a)
+{
+	/* TODO */
+	cycle += 2;
+}
+
+void
+hwq(unsigned short *a)
+{
+	/* TODO */
+	cycle += 4;
+}
+
+void
+hwi(unsigned short *a)
+{
+	/* TODO */
+	cycle += 4;
+}
+
+void (*extop[nExt])(unsigned short *a) = {
+	[NOP] = nop,
+	[JSR] = jsr,
+	[BRK] = stop,
+	[INT] = intr,
+	[IAG] = iag,
+	[IAS] = ias,
+	[HWN] = hwn,
+	[HWQ] = hwq,
+	[HWI] = hwi,
+};
+
+void
+ext(unsigned short *b, unsigned short *a)
+{
+	extop[*b](a);
+}
+
+void
+set(unsigned short *b, unsigned short *a)
+{
+	*b = *a;
+	cycle += 1;
+}
+
+void
+add(unsigned short *b, unsigned short *a)
+{
+	int tmp = *b;
+
+	tmp += *a;
+	reg[EX] = (tmp > 0xFFFF) ? 0x0001 : 0;
+
+	*b = tmp;
+	cycle += 2;
+}
+
+void
+sub(unsigned short *b, unsigned short *a)
+{
+	int tmp = *b;
+
+	tmp -= *a;
+	reg[EX] = (tmp < 0) ? 0xFFFF : 0;
+
+	*b = tmp;
+	cycle += 2;
+}
+
+void
+mul(unsigned short *b, unsigned short *a)
+{
+	unsigned int tmp = *b;
+
+	tmp *= *a;
+	reg[EX] = tmp >> 16;
+
+	*b = tmp;
+	cycle += 2;
+}
+
+void
+mli(unsigned short *b, unsigned short *a)
+{
+	int tmp = *b;
+
+	tmp *= *a;
+	reg[EX] = tmp >> 16;
+
+	*b = tmp;
+	cycle += 2;
+}
+
+void
+div(unsigned short *b, unsigned short *a)
+{
+	unsigned int tmp = *b;
+
+	if (*a == 0) {
+		reg[EX] = 0;
+		*b = 0;
+	} else {
+		reg[EX] = ((tmp << 16) / *a);
+		*b /= *a;
+	}
+	cycle += 3;
+}
+
+void
+dvi(unsigned short *b, unsigned short *a)
+{
+	int tmp = *b;
+
+	if (*a == 0) {
+		reg[EX] = 0;
+		*b = 0;
+	} else {
+		reg[EX] = ((tmp << 16) / *a);
+		*b /= *a;
+	}
+	cycle += 3;
+}
+
+void
+mod(unsigned short *b, unsigned short *a)
+{
+	if (*a == 0)
+		*b = 0;
+	else
+		*b %= *a;
+	cycle += 3;
+}
+
+void
+and(unsigned short *b, unsigned short *a)
+{
+	*b &= *a;
+	cycle += 1;
+}
+
+void
+bor(unsigned short *b, unsigned short *a)
+{
+	*b |= *a;
+	cycle += 1;
+}
+
+void
+xor(unsigned short *b, unsigned short *a)
+{
+	*b ^= *a;
+	cycle += 1;
+}
+
+void
+shr(unsigned short *b, unsigned short *a)
+{
+	int tmp = *b;
+
+	/* TODO */
+
+	reg[EX] = ((tmp << 16) >> *a);
+	*b >>= *a;
+	cycle += 2;
+}
+
+void
+asr(unsigned short *b, unsigned short *a)
+{
+	int tmp = *b;
+
+	/* TODO */
+
+	reg[EX] = ((tmp << 16) >> *a);
+	*b >>= *a;
+	cycle += 2;
+}
+
+void
+shl(unsigned short *b, unsigned short *a)
+{
+	int tmp = *b;
+
+	/* TODO */
+
+	reg[EX] = ((tmp << *a) >> 16);
+	*b <<= *a;
+	cycle += 2;
+}
+
+void
+mvi(unsigned short *b, unsigned short *a)
+{
+	*b = *a;
+	++reg[I];
+	++reg[J];
+	cycle += 2;
+}
+
+void
+ifb(unsigned short *b, unsigned short *a)
+{
+	skip = !(*b & *a);
+	cycle += 2 + skip;
+}
+
+void
+ifc(unsigned short *b, unsigned short *a)
+{
+	skip = (*b & *a);
+	cycle += 2 + skip;
+}
+
+void
+ife(unsigned short *b, unsigned short *a)
+{
+	skip = !(*b == *a);
+	cycle += 2 + skip;
+}
+
+void
+ifn(unsigned short *b, unsigned short *a)
+{
+	skip = (*b == *a);
+	cycle += 2 + skip;
+}
+
+void
+ifg(unsigned short *b, unsigned short *a)
+{
+	skip = !(*b > *a);
+	cycle += 2 + skip;
+}
+
+void
+ifa(unsigned short *b, unsigned short *a)
+{
+	skip = !((signed short)*b > (signed short)*a);
+	cycle += 2 + skip;
+}
+
+void
+ifl(unsigned short *b, unsigned short *a)
+{
+	skip = !(*b < *a);
+	cycle += 2 + skip;
+}
+
+void
+ifu(unsigned short *b, unsigned short *a)
+{
+	skip = !((signed short)*b < (signed short)*a);
+	cycle += 2 + skip;
+}
+
+void
+adx(unsigned short *b, unsigned short *a)
+{
+	int tmp = *b;
+
+	/* TODO */
+	tmp += *a + reg[EX];
+	reg[EX] = tmp > 0xFFFF ? 0x0001 : 0;
+	cycle += 3;
+}
+
+void
+sux(unsigned short *b, unsigned short *a)
+{
+	int tmp = *b;
+
+	/* TODO */
+	tmp -= *a + reg[EX];
+	reg[EX] = tmp < 0 ? 0x0001 : 0;
+	cycle += 3;
+}
+
+void (*op[nOpt])(unsigned short *a, unsigned short *b) = {
+	[EXT] = ext,
+	[SET] = set,
+	[ADD] = add,
+	[SUB] = sub,
+	[MUL] = mul,
+	[MLI] = mli,
+	[DIV] = div,
+	[DVI] = dvi,
+	[MOD] = mod,
+	[AND] = and,
+	[BOR] = bor,
+	[XOR] = xor,
+	[SHR] = shr,
+	[ASR] = asr,
+	[SHL] = shl,
+	[MVI] = mvi,
+	[IFB] = ifb,
+	[IFC] = ifc,
+	[IFE] = ife,
+	[IFN] = ifn,
+	[IFG] = ifg,
+	[IFA] = ifa,
+	[IFU] = ifu,
+	[IFL] = ifl,
+	[ADX] = adx,
+	[SUX] = sux,
+};
+
 unsigned short *
-fetcharg(int a)
+fetcharg(int a, int first)
 {
 	switch (a) {
 	case 0x00:
@@ -272,14 +412,17 @@ fetcharg(int a)
 		cycle += 1;
 		return &mem[mem[reg[PC]++] + reg[a - 0x10]];
 	case 0x18:
-		/* pop */
-		return &mem[reg[SP]++];
+		/* TODO push or pop */
+		if (first)
+			return &mem[reg[SP]++];	/* push */
+		else
+			return &mem[--reg[SP]];	/* pop */
 	case 0x19:
 		/* peek */
 		return &mem[reg[SP]];
 	case 0x1a:
-		/* push */
-		return &mem[--reg[SP]];
+		/* pick */
+		return &mem[reg[SP] + reg[PC]++];
 	case 0x1b:
 		/* SP */
 		return &reg[SP];
@@ -287,8 +430,8 @@ fetcharg(int a)
 		/* PC */
 		return &reg[PC];
 	case 0x1d:
-		/* O */
-		return &reg[O];
+		/* EX */
+		return &reg[EX];
 	case 0x1e:
 		/* [next word] */
 		cycle += 1;
@@ -319,17 +462,18 @@ step(unsigned short *m, unsigned short *r)
 	c = mem[reg[PC]++];
 	s = reg[SP];		/* store SP */
 
-	o = c & 0x0f;
-	reg[Aux] = (c >> 4) & 0x3f;
+	o = c & 0x1f;
+		
 	/* don't fetch first arg for extended opcodes */
-	a = o ? fetcharg(reg[Aux]) : &reg[Aux];
-	b = fetcharg((c >> 10) & 0x3f);
+	reg[Aux] = (c >> 5) & 0x1f;
+	b = o ? fetcharg(reg[Aux], 0) : &reg[Aux];
+	a = fetcharg((c >> 10) & 0x3f, 1);
 
 	if (skip) {
 		skip = 0;
 		reg[SP] = s;	/* restore SP on skipped opcode */
 	} else
-		op[o](a, b);
+		op[o](b, a);
 
 	usleep(10 * cycle);	/* 100kHz */
 
