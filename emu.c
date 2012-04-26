@@ -1,4 +1,4 @@
-/* $Id: emu.c,v 1.14 2012/04/26 18:48:13 demon Exp $ */
+/* $Id: emu.c,v 1.15 2012/04/26 19:59:23 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -429,7 +429,7 @@ void (*op[nOpt])(unsigned short *a, unsigned short *b) = {
 };
 
 unsigned short *
-fetcharg(int a, int first)
+fetcharg(int a, int barg)
 {
 	switch (a) {
 	case 0x00:
@@ -465,10 +465,10 @@ fetcharg(int a, int first)
 		return &mem[mem[reg[PC]++] + reg[a - 0x10]];
 	case 0x18:
 		/* TODO push or pop */
-		if (first)
-			return &mem[reg[SP]++];	/* push */
+		if (barg)
+			return &mem[--reg[SP]];	/* push */
 		else
-			return &mem[--reg[SP]];	/* pop */
+			return &mem[reg[SP]++];	/* pop */
 	case 0x19:
 		/* peek */
 		return &mem[reg[SP]];
@@ -518,8 +518,8 @@ step(unsigned short *m, unsigned short *r)
 		
 	/* don't fetch first arg for extended opcodes */
 	reg[Aux] = (c >> 5) & 0x1f;
-	b = o ? fetcharg(reg[Aux], 0) : &reg[Aux];
-	a = fetcharg((c >> 10) & 0x3f, 1);
+	b = o ? fetcharg(reg[Aux], 1) : &reg[Aux];
+	a = fetcharg((c >> 10) & 0x3f, 0);
 
 	if (skip) {
 		skip = 0;
