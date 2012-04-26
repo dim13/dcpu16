@@ -1,4 +1,4 @@
-/* $Id: emu.c,v 1.12 2012/04/26 14:41:32 demon Exp $ */
+/* $Id: emu.c,v 1.13 2012/04/26 17:52:29 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -76,6 +76,20 @@ ias(unsigned short *a)
 }
 
 void
+iap(unsigned short *a)
+{
+	/* TODO */
+	cycle += 3;
+}
+
+void
+iaq(unsigned short *a)
+{
+	/* TODO */
+	cycle += 2;
+}
+
+void
 hwn(unsigned short *a)
 {
 	/* TODO */
@@ -104,6 +118,8 @@ void (*extop[nExt])(unsigned short *a) = {
 	[INT] = intr,
 	[IAG] = iag,
 	[IAS] = ias,
+	[IAP] = iap,
+	[IAQ] = iaq,
 	[HWN] = hwn,
 	[HWQ] = hwq,
 	[HWI] = hwi,
@@ -211,6 +227,17 @@ mod(unsigned short *b, unsigned short *a)
 }
 
 void
+mdi(unsigned short *b, unsigned short *a)
+{
+	/* TODO */
+	if (*a == 0)
+		*b = 0;
+	else
+		*b %= *a;
+	cycle += 3;
+}
+
+void
 and(unsigned short *b, unsigned short *a)
 {
 	*b &= *a;
@@ -266,15 +293,6 @@ shl(unsigned short *b, unsigned short *a)
 
 	reg[EX] = ((tmp << *a) >> 16);
 	*b <<= *a;
-	cycle += 2;
-}
-
-void
-sti(unsigned short *b, unsigned short *a)
-{
-	*b = *a;
-	++reg[I];
-	++reg[J];
 	cycle += 2;
 }
 
@@ -356,6 +374,25 @@ sbx(unsigned short *b, unsigned short *a)
 	cycle += 3;
 }
 
+
+void
+sti(unsigned short *b, unsigned short *a)
+{
+	*b = *a;
+	++reg[I];
+	++reg[J];
+	cycle += 2;
+}
+
+void
+std(unsigned short *b, unsigned short *a)
+{
+	*b = *a;
+	--reg[I];
+	--reg[J];
+	cycle += 2;
+}
+
 void (*op[nOpt])(unsigned short *a, unsigned short *b) = {
 	[EXT] = ext,
 	[SET] = set,
@@ -366,6 +403,7 @@ void (*op[nOpt])(unsigned short *a, unsigned short *b) = {
 	[DIV] = div,
 	[DVI] = dvi,
 	[MOD] = mod,
+	[MDI] = mdi,
 	[AND] = and,
 	[BOR] = bor,
 	[XOR] = xor,
@@ -383,6 +421,8 @@ void (*op[nOpt])(unsigned short *a, unsigned short *b) = {
 	[IFL] = ifl,
 	[ADX] = adx,
 	[SBX] = sbx,
+	[STI] = sti,
+	[STD] = std,
 };
 
 unsigned short *

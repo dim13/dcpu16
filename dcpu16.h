@@ -1,4 +1,4 @@
-/* $Id: dcpu16.h,v 1.9 2012/04/25 23:23:00 demon Exp $ */
+/* $Id: dcpu16.h,v 1.10 2012/04/26 17:52:29 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -22,12 +22,13 @@ enum {	A, B, C, X, Y, Z, I, J, PC, SP, EX, IA,
 	Aux, nReg };
 
 enum {	EXT, SET, ADD, SUB, MUL, MLI, DIV, DVI,
-	MOD, AND, BOR, XOR, SHR, ASR, SHL, STI,
+	MOD, MDI, AND, BOR, XOR, SHR, ASR, SHL,
 	IFB, IFC, IFE, IFN, IFG, IFA, IFL, IFU,
-	ADX = 0x1a, SBX, nOpt };
+	ADX = 0x1a, SBX,
+	STI = 0x1e, STD, nOpt };
 
 enum {	NOP, JSR, BRK,
-	HCF = 0x07, INT, IAG, IAS,
+	HCF = 0x07, INT, IAG, IAS, IAP, IAQ,
 	HWN = 0x10, HWQ, HWI, nExt };
 
 #define MEMSZ	0x10000

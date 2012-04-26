@@ -1,4 +1,4 @@
-/* $Id: gramar.y,v 1.13 2012/04/25 23:23:00 demon Exp $ */
+/* $Id: gramar.y,v 1.14 2012/04/26 17:52:29 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -64,10 +64,10 @@ struct label {
 
 %token PUSH POP PEEK PICK SP PC EX
 
-%token SET ADD SUB MUL MLI DIV DVI MOD AND BOR XOR SHR ASR SHL STI
-%token IFB IFC IFE IFN IFG IFA IFL IFU ADX SBX
+%token SET ADD SUB MUL MLI DIV DVI MOD MDI AND BOR XOR SHR ASR SHL
+%token IFB IFC IFE IFN IFG IFA IFL IFU ADX SBX STI STD
 %token NOP BRK DAT ORG
-%token JSR HCF INT IAG IAS HWN HWQ HWI
+%token JSR HCF INT IAG IAS IAP IAQ HWN HWQ HWI
 %token LBR RBR LBRACE RBRACE LPAR RPAR
 %token COMMA DP PLUS MINUS MULT
 %token DOT HASH MACRO INCLUDE
@@ -210,13 +210,13 @@ opcode
 	| DIV			{ $$ = 0x06; }
 	| DVI			{ $$ = 0x07; }
 	| MOD			{ $$ = 0x08; }
-	| AND			{ $$ = 0x09; }
-	| BOR			{ $$ = 0x0a; }
-	| XOR			{ $$ = 0x0b; }
-	| SHR			{ $$ = 0x0c; }
-	| ASR			{ $$ = 0x0d; }
-	| SHL			{ $$ = 0x0e; }
-	| STI			{ $$ = 0x0f; }
+	| MDI			{ $$ = 0x09; }
+	| AND			{ $$ = 0x0a; }
+	| BOR			{ $$ = 0x0b; }
+	| XOR			{ $$ = 0x0c; }
+	| SHR			{ $$ = 0x0d; }
+	| ASR			{ $$ = 0x0e; }
+	| SHL			{ $$ = 0x0f; }
 	| IFB			{ $$ = 0x10; }
 	| IFC			{ $$ = 0x11; }
 	| IFE			{ $$ = 0x12; }
@@ -227,6 +227,8 @@ opcode
 	| IFU			{ $$ = 0x17; }
 	| ADX			{ $$ = 0x1a; }
 	| SBX			{ $$ = 0x1b; }
+	| STI			{ $$ = 0x1e; }
+	| STD			{ $$ = 0x1f; }
 	;
 
 extended
@@ -235,6 +237,8 @@ extended
 	| INT			{ $$ = 0x08; }
 	| IAG			{ $$ = 0x09; }
 	| IAS			{ $$ = 0x0a; }
+	| IAP			{ $$ = 0x0b; }
+	| IAQ			{ $$ = 0x0c; }
 	| HWN			{ $$ = 0x10; }
 	| HWQ			{ $$ = 0x11; }
 	| HWI			{ $$ = 0x12; }

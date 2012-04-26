@@ -1,4 +1,4 @@
-/* $Id: lexer.l,v 1.8 2012/04/25 23:23:00 demon Exp $ */
+/* $Id: lexer.l,v 1.9 2012/04/26 17:52:29 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -43,13 +43,14 @@ DEC	[0-9]+
 [Dd][Ii][Vv]		return DIV;
 [Dd][Vv][Ii]		return DVI;
 [Mm][Oo][Dd]		return MOD;
+[Mm][Dd][Ii]		return MDI;
 [Aa][Nn][Dd]		return AND;
 [Bb][Oo][Rr]		return BOR;
 [Xx][Oo][Rr]		return XOR;
 [Ss][Hh][Rr]		return SHR;
 [Aa][Ss][Rr]		return ASR;
 [Ss][Hh][Ll]		return SHL;
-[Ss][Tt][Ii]		return STI;
+
 [Ii][Ff][Bb]		return IFB;
 [Ii][Ff][Cc]		return IFC;
 [Ii][Ff][Ee]		return IFE;
@@ -60,6 +61,8 @@ DEC	[0-9]+
 [Ii][Ff][Uu]		return IFU;
 [Aa][Dd][Xx]		return ADX;
 [Ss][Bb][Xx]		return SBX;
+[Ss][Tt][Ii]		return STI;
+[Ss][Tt][Dd]		return STD;
 
 [Nn][Oo][Pp]		return NOP;
 [Jj][Ss][Rr]		return JSR;
@@ -68,6 +71,8 @@ DEC	[0-9]+
 [Ii][Nn][Tt]		return INT;
 [Ii][Aa][Gg]		return IAG;
 [Ii][Aa][Ss]		return IAS;
+[Ii][Aa][Pp]		return IAP;
+[Ii][Aa][Qq]		return IAQ;
 [Hh][Ww][Nn]		return HWN;
 [Hh][Ww][Qq]		return HWQ;
 [Hh][Ww][Ii]		return HWI;
