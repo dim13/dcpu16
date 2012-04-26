@@ -1,4 +1,4 @@
-/* $Id: emu.c,v 1.18 2012/04/26 20:36:43 demon Exp $ */
+/* $Id: emu.c,v 1.19 2012/04/26 20:39:02 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -135,7 +135,7 @@ ext(unsigned short *b, unsigned short *a)
 	if (extop[*b])
 		extop[*b](a);
 	else {
-		warnx("wrong extended opcode 0x%x", *b);
+		warnx("wrong extended opcode 0x%x (0x%x)", *b, *a);
 		++errors;
 	}
 }
@@ -538,7 +538,7 @@ step(unsigned short *m, unsigned short *r)
 		if (op[o])
 			op[o](b, a);
 		else {
-			warnx("wrong opcode 0x%x", o);
+			warnx("wrong opcode 0x%x(0x%x, 0x%x)", o, *b, *a);
 			++errors;
 		}
 	}
