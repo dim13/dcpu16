@@ -1,4 +1,4 @@
-/* $Id: emu.c,v 1.15 2012/04/26 19:59:23 demon Exp $ */
+/* $Id: emu.c,v 1.16 2012/04/26 20:11:07 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -131,7 +131,10 @@ void (*extop[nExt])(unsigned short *a) = {
 void
 ext(unsigned short *b, unsigned short *a)
 {
-	extop[*b](a);
+	if (extop[*b])
+		extop[*b](a);
+	else
+		warnx("wrong extended opcode 0x%x", *b);
 }
 
 void
@@ -521,11 +524,19 @@ step(unsigned short *m, unsigned short *r)
 	b = o ? fetcharg(reg[Aux], 1) : &reg[Aux];
 	a = fetcharg((c >> 10) & 0x3f, 0);
 
+	#if 0
+	fprintf(stderr, "%x %x, %x\n", o, *b, *a);
+	#endif
+
 	if (skip) {
 		skip = 0;
 		reg[SP] = s;	/* restore SP on skipped opcode */
-	} else
-		op[o](b, a);
+	} else {
+		if (op[o])
+			op[o](b, a);
+		else
+			warnx("wrong opcode 0x%x", o);
+	}
 
 	usleep(10 * cycle);	/* 100kHz */
 
