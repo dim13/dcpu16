@@ -1,4 +1,4 @@
-/* $Id: emu.c,v 1.10 2012/04/25 23:23:00 demon Exp $ */
+/* $Id: emu.c,v 1.11 2012/04/26 14:31:51 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -64,14 +64,14 @@ intr(unsigned short *a)
 void
 iag(unsigned short *a)
 {
-	/* TODO */
+	*a = reg[IA];
 	cycle += 1;
 }
 
 void
 ias(unsigned short *a)
 {
-	/* TODO */
+	reg[IA] = *a;
 	cycle += 1;
 }
 
