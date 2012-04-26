@@ -1,4 +1,4 @@
-/* $Id: gramar.y,v 1.15 2012/04/26 18:19:00 demon Exp $ */
+/* $Id: gramar.y,v 1.16 2012/04/26 18:22:33 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -128,12 +128,7 @@ block
 	;
 
 expr
-	: NUMBER	
-	{
-				if ($1 > 0xFFFF)
-					yyerror("integer too big");
-				$$ = $1;
-	}
+	: NUMBER		{ $$ = $1; }
 	| MINUS expr %prec UMINUS	{ $$ = -$2; }
 	| ENOT expr		{ $$ = ~$2; }
 	| expr PLUS expr	{ $$ = $1 + $3; }
