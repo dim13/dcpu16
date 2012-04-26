@@ -1,4 +1,4 @@
-/* $Id: gramar.y,v 1.17 2012/04/26 20:31:43 demon Exp $ */
+/* $Id: gramar.y,v 1.18 2012/04/26 20:33:24 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -186,8 +186,8 @@ operand
 	}
 	| expr
 	{
-				if ($1 < 0x1f)
-					$$ = 0x21 + $1;
+				if ($1 <= 30 && $1 >= -1)
+					$$ = 0x20 + $1 + 1;
 				else {
 					$$ = 0x1f;
 					push($1, NULL);

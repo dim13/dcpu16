@@ -1,4 +1,4 @@
-/* $Id: emu.c,v 1.16 2012/04/26 20:11:07 demon Exp $ */
+/* $Id: emu.c,v 1.17 2012/04/26 20:34:20 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -497,7 +497,7 @@ fetcharg(int a, int barg)
 		return &mem[reg[PC]++];
 	default:
 		/* literal */
-		reg[Aux] = a - 0x20;
+		reg[Aux] = a - 0x20 - 1;
 		return &reg[Aux];
 	}
 }
