@@ -1,4 +1,4 @@
-/* $Id: lexer.l,v 1.9 2012/04/26 17:52:29 demon Exp $ */
+/* $Id: lexer.l,v 1.10 2012/04/26 18:19:00 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -99,7 +99,15 @@ DEC	[0-9]+
 
 "+"			return PLUS;
 "-"			return MINUS;
-"*"			return MULT;
+"*"			return EMUL;
+"/"			return EDIV;
+"%"			return EMOD;
+"~"			return ENOT;
+"^"			return EXOR;
+"&"			return EAND;
+"|"			return EOR;
+"<<"			return SHIFTL;
+">>"			return SHIFTR;
 ","			return COMMA;
 ":"			return DP;
 "["			return LBR;

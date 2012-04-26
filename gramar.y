@@ -1,4 +1,4 @@
-/* $Id: gramar.y,v 1.14 2012/04/26 17:52:29 demon Exp $ */
+/* $Id: gramar.y,v 1.15 2012/04/26 18:19:00 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -69,15 +69,21 @@ struct label {
 %token NOP BRK DAT ORG
 %token JSR HCF INT IAG IAS IAP IAQ HWN HWQ HWI
 %token LBR RBR LBRACE RBRACE LPAR RPAR
-%token COMMA DP PLUS MINUS MULT
+%token COMMA DP
+%token PLUS MINUS EMUL EDIV EMOD ENOT EXOR EAND EOR SHIFTL SHIFTR
 %token DOT HASH MACRO INCLUDE
 %token <ival> NUMBER
 %token <sval> STRING QSTRING
 
 %type <ival> register opcode operand expr extended noop
 
+%left EOR
+%left EXOR
+%left EAND
+%left SHIFTL SHIFTR
 %left PLUS MINUS
-%left MULT
+%left EMUL EDIV EMOD
+%left ENOT UMINUS
 
 %%
 
@@ -128,9 +134,18 @@ expr
 					yyerror("integer too big");
 				$$ = $1;
 	}
+	| MINUS expr %prec UMINUS	{ $$ = -$2; }
+	| ENOT expr		{ $$ = ~$2; }
 	| expr PLUS expr	{ $$ = $1 + $3; }
 	| expr MINUS expr	{ $$ = $1 - $3; }
-	| expr MULT expr	{ $$ = $1 * $3; }
+	| expr EMUL expr	{ $$ = $1 * $3; }
+	| expr EDIV expr	{ $$ = $3 ? $1 / $3 : 0; }
+	| expr EMOD expr	{ $$ = $1 % $3; }
+	| expr EXOR expr	{ $$ = $1 ^ $3; }
+	| expr EAND expr	{ $$ = $1 & $3; }
+	| expr EOR expr		{ $$ = $1 | $3; }
+	| expr SHIFTL expr	{ $$ = $1 << $3; }
+	| expr SHIFTR expr	{ $$ = $1 >> $3; }
 	| LPAR expr RPAR	{ $$ = $2; }
 	;
 
