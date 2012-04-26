@@ -1,4 +1,4 @@
-/* $Id: emu.c,v 1.13 2012/04/26 17:52:29 demon Exp $ */
+/* $Id: emu.c,v 1.14 2012/04/26 18:48:13 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -78,7 +78,10 @@ ias(unsigned short *a)
 void
 iap(unsigned short *a)
 {
-	/* TODO */
+	if (reg[IA]) {
+		mem[--reg[SP]] = reg[IA];
+		reg[IA] = *a;
+	}
 	cycle += 3;
 }
 
