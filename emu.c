@@ -1,4 +1,4 @@
-/* $Id: emu.c,v 1.11 2012/04/26 14:31:51 demon Exp $ */
+/* $Id: emu.c,v 1.12 2012/04/26 14:41:32 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -247,11 +247,13 @@ void
 asr(unsigned short *b, unsigned short *a)
 {
 	int tmp = *b;
+	int top = *b | 0x8000;
 
 	/* TODO */
 
 	reg[EX] = ((tmp << 16) >> *a);
 	*b >>= *a;
+	*b |= top;
 	cycle += 2;
 }
 
