@@ -1,4 +1,4 @@
-/* $Id: gramar.y,v 1.24 2012/04/27 14:21:08 demon Exp $ */
+/* $Id: gramar.y,v 1.25 2012/04/27 14:31:04 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -113,7 +113,7 @@ statement
 
 data
 	: /* empty */
-	| data entry
+	| entry
 	| data COMMA entry
 	;
 
