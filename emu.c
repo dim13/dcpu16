@@ -1,4 +1,4 @@
-/* $Id: emu.c,v 1.22 2012/04/27 04:36:41 demon Exp $ */
+/* $Id: emu.c,v 1.23 2012/04/27 04:44:51 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -196,7 +196,7 @@ div(unsigned short *b, unsigned short *a)
 		reg[EX] = 0;
 		*b = 0;
 	} else {
-		tmp = (unsigned int)*b << 16 / *a;
+		tmp = ((unsigned int)*b << 16) / *a;
 		reg[EX] = tmp;
 		*b = tmp >> 16;
 	}
@@ -212,7 +212,7 @@ dvi(unsigned short *b, unsigned short *a)
 		reg[EX] = 0;
 		*b = 0;
 	} else {
-		tmp = (signed int)*b << 16 / (signed short)*a;
+		tmp = ((signed int)*b << 16) / (signed short)*a;
 		reg[EX] = tmp;
 		*b = tmp >> 16;
 	}

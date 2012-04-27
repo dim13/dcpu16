@@ -1,4 +1,4 @@
-/* $Id: tui.c,v 1.5 2012/04/25 23:06:58 demon Exp $ */
+/* $Id: tui.c,v 1.6 2012/04/27 04:44:51 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -132,7 +132,7 @@ tuiemu(unsigned short *m, unsigned short *r)
 	initscr();
 
 	noecho();
-//	nodelay(stdscr, TRUE);
+	nodelay(stdscr, TRUE);
 
 	start_color();
 	init_colors();
