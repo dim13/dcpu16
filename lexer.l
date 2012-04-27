@@ -1,4 +1,4 @@
-/* $Id: lexer.l,v 1.12 2012/04/27 13:12:28 demon Exp $ */
+/* $Id: lexer.l,v 1.13 2012/04/27 13:25:06 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -67,7 +67,7 @@ DEC	[0-9]+
 [Nn][Oo][Pp]		return NOP;
 [Jj][Ss][Rr]		return JSR;
 [Bb][Rr][Kk]		return BRK;
-
+[Hh][Cc][Ff]		return HCF;
 [Ii][Nn][Tt]		return INT;
 [Ii][Aa][Gg]		return IAG;
 [Ii][Aa][Ss]		return IAS;

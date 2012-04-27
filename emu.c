@@ -1,4 +1,4 @@
-/* $Id: emu.c,v 1.24 2012/04/27 13:12:28 demon Exp $ */
+/* $Id: emu.c,v 1.25 2012/04/27 13:25:06 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -47,6 +47,13 @@ stop(unsigned short *a)
 {
 	run = 0;
 	cycle += 1;
+}
+
+void
+hcf(unsigned short *a)
+{
+	/* TODO: halt catch fire */
+	cycle += 9;
 }
 
 void
@@ -109,6 +116,7 @@ void (*extop[nExt])(unsigned short *) = {
 	[NOP] = nop,
 	[JSR] = jsr,
 	[BRK] = stop,
+	[HCF] = hcf,
 	[INT] = intr,
 	[IAG] = iag,
 	[IAS] = ias,

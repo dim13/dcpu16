@@ -1,4 +1,4 @@
-/* $Id: gramar.y,v 1.20 2012/04/27 13:12:28 demon Exp $ */
+/* $Id: gramar.y,v 1.21 2012/04/27 13:25:06 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -68,7 +68,7 @@ struct label {
 %token SET ADD SUB MUL MLI DIV DVI MOD MDI AND BOR XOR SHR ASR SHL
 %token IFB IFC IFE IFN IFG IFA IFL IFU ADX SBX STI STD
 %token NOP BRK DAT ORG
-%token JSR INT IAG IAS RFI IAQ HWN HWQ HWI
+%token JSR HCF INT IAG IAS RFI IAQ HWN HWQ HWI
 %token LBR RBR LBRACE RBRACE LPAR RPAR
 %token COMMA DP
 %token PLUS MINUS EMUL EDIV EMOD ENOT EXOR EAND EOR SHIFTL SHIFTR
@@ -244,6 +244,7 @@ opcode
 
 extended
 	: JSR			{ $$ = 0x01; }
+	| HCF			{ $$ = 0x07; }
 	| INT			{ $$ = 0x08; }
 	| IAG			{ $$ = 0x09; }
 	| IAS			{ $$ = 0x0a; }
