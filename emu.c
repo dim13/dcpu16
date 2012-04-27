@@ -1,4 +1,4 @@
-/* $Id: emu.c,v 1.25 2012/04/27 13:25:06 demon Exp $ */
+/* $Id: emu.c,v 1.26 2012/04/27 13:57:31 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -81,6 +81,8 @@ void
 rfi(unsigned short *a)
 {
 	/* TODO */
+	*a = mem[reg[SP]++];
+	reg[PC] = mem[reg[SP]++];
 	cycle += 3;
 }
 
