@@ -1,4 +1,4 @@
-/* $Id: emu.c,v 1.23 2012/04/27 04:44:51 demon Exp $ */
+/* $Id: emu.c,v 1.24 2012/04/27 13:12:28 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -50,13 +50,6 @@ stop(unsigned short *a)
 }
 
 void
-hcf(unsigned short *a)
-{
-	/* TODO */
-	cycle += 9;
-}
-
-void
 intr(unsigned short *a)
 {
 	/* TODO */
@@ -78,12 +71,9 @@ ias(unsigned short *a)
 }
 
 void
-iap(unsigned short *a)
+rfi(unsigned short *a)
 {
-	if (reg[IA]) {
-		mem[--reg[SP]] = reg[IA];
-		reg[IA] = *a;
-	}
+	/* TODO */
 	cycle += 3;
 }
 
@@ -119,11 +109,10 @@ void (*extop[nExt])(unsigned short *) = {
 	[NOP] = nop,
 	[JSR] = jsr,
 	[BRK] = stop,
-	[HCF] = hcf,
 	[INT] = intr,
 	[IAG] = iag,
 	[IAS] = ias,
-	[IAP] = iap,
+	[RFI] = rfi,
 	[IAQ] = iaq,
 	[HWN] = hwn,
 	[HWQ] = hwq,
@@ -266,7 +255,7 @@ shr(unsigned short *b, unsigned short *a)
 {
 	reg[EX] = (((unsigned int)*b << 16) >> *a);
 	*b >>= *a;
-	cycle += 2;
+	cycle += 1;
 }
 
 void
@@ -274,7 +263,7 @@ asr(unsigned short *b, unsigned short *a)
 {
 	reg[EX] = (((unsigned int)*b << 16) >> *a);
 	*b = (signed short)*b >> *a;
-	cycle += 2;
+	cycle += 1;
 }
 
 void
@@ -282,7 +271,7 @@ shl(unsigned short *b, unsigned short *a)
 {
 	reg[EX] = (((unsigned int)*b << *a) >> 16);
 	*b <<= *a;
-	cycle += 2;
+	cycle += 1;
 }
 
 void
