@@ -1,4 +1,4 @@
-/* $Id: emu.c,v 1.21 2012/04/27 04:27:36 demon Exp $ */
+/* $Id: emu.c,v 1.22 2012/04/27 04:36:41 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -153,7 +153,7 @@ add(unsigned short *b, unsigned short *a)
 {
 	int tmp = *b + *a;
 
-	reg[EX] = !!(tmp >> 16);
+	reg[EX] = tmp >> 16;
 	*b = tmp;
 	cycle += 2;
 }
@@ -163,7 +163,7 @@ sub(unsigned short *b, unsigned short *a)
 {
 	int tmp = *b - *a;
 
-	reg[EX] = -1 * !!(tmp >> 16);
+	reg[EX] = tmp >> 16;
 	*b = tmp;
 	cycle += 2;
 }
@@ -346,7 +346,7 @@ adx(unsigned short *b, unsigned short *a)
 {
 	int tmp = *b + *a + reg[EX];
 
-	reg[EX] = !!(tmp > 16);
+	reg[EX] = tmp > 16;
 	*b = tmp;
 	cycle += 3;
 }
@@ -356,7 +356,7 @@ sbx(unsigned short *b, unsigned short *a)
 {
 	int tmp = *b - *a + reg[EX];
 
-	reg[EX] = -1 * !!(tmp >> 16);
+	reg[EX] = tmp >> 16;
 	*b = tmp;
 	cycle += 3;
 }
@@ -488,7 +488,7 @@ step(unsigned short *m, unsigned short *r)
 {
 	unsigned short c, o, *a, *b, s, tmp;
 
-	if (!run)
+	if (!run || errors > 3)
 		return -1;
 
 	mem = m;
@@ -516,9 +516,6 @@ step(unsigned short *m, unsigned short *r)
 	}
 
 	usleep(10 * cycle);	/* 100kHz */
-
-	if (errors > 3)
-		return -1;
 
 	return cycle;
 }
