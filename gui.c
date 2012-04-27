@@ -1,4 +1,4 @@
-/* $Id: gui.c,v 1.17 2012/04/25 18:13:12 demon Exp $ */
+/* $Id: gui.c,v 1.18 2012/04/27 13:01:22 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -182,11 +182,15 @@ guiemu(unsigned short *m, unsigned short *r)
 	scratch = SDL_CreateRGBSurface(SDL_HWSURFACE, scr.w, scr.h, 8, 0, 0, 0, 0);
 	SDL_SetColors(scratch, color, 0, 16);
 
+	atexit(SDL_Quit);
+
 	loadfont(m, "font.xpm");
 
 	while ((c = step(m, r)) != -1) {
 		if ((n += c) < 100)
 			continue;
+
+		n = 0;
 
 		if (SDL_MUSTLOCK(screen) && SDL_LockSurface(screen))
 			continue;
@@ -204,7 +208,6 @@ guiemu(unsigned short *m, unsigned short *r)
 		if (SDL_MUSTLOCK(screen))
 			SDL_UnlockSurface(screen);
 
-		n = 0;
 		if (keyboard(m) == -1)
 			break;
 	}
