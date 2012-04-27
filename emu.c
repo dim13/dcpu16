@@ -1,4 +1,4 @@
-/* $Id: emu.c,v 1.19 2012/04/26 20:39:02 demon Exp $ */
+/* $Id: emu.c,v 1.20 2012/04/27 01:46:06 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -15,6 +15,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <err.h>
 #include <stdio.h>
 #include <unistd.h>
 #include "dcpu16.h"
@@ -150,11 +151,9 @@ set(unsigned short *b, unsigned short *a)
 void
 add(unsigned short *b, unsigned short *a)
 {
-	int tmp = *b;
+	int tmp = *b + *a;
 
-	tmp += *a;
-	reg[EX] = (tmp > 0xFFFF) ? 0x0001 : 0;
-
+	reg[EX] = !!(tmp >> 16);
 	*b = tmp;
 	cycle += 2;
 }
@@ -162,11 +161,9 @@ add(unsigned short *b, unsigned short *a)
 void
 sub(unsigned short *b, unsigned short *a)
 {
-	int tmp = *b;
+	int tmp = *b - *a;
 
-	tmp -= *a;
-	reg[EX] = (tmp < 0) ? 0xFFFF : 0;
-
+	reg[EX] = -1 * !!(tmp >> 16);
 	*b = tmp;
 	cycle += 2;
 }
@@ -174,11 +171,9 @@ sub(unsigned short *b, unsigned short *a)
 void
 mul(unsigned short *b, unsigned short *a)
 {
-	unsigned int tmp = *b;
+	int tmp = *b * *a;
 
-	tmp *= *a;
 	reg[EX] = tmp >> 16;
-
 	*b = tmp;
 	cycle += 2;
 }
@@ -186,11 +181,8 @@ mul(unsigned short *b, unsigned short *a)
 void
 mli(unsigned short *b, unsigned short *a)
 {
-	int tmp = *b;
-
-	tmp *= *a;
+	int tmp = (signed short)*b * (signed short)*b;
 	reg[EX] = tmp >> 16;
-
 	*b = tmp;
 	cycle += 2;
 }
@@ -198,14 +190,15 @@ mli(unsigned short *b, unsigned short *a)
 void
 div(unsigned short *b, unsigned short *a)
 {
-	unsigned int tmp = *b;
+	int tmp;
 
 	if (*a == 0) {
 		reg[EX] = 0;
 		*b = 0;
 	} else {
-		reg[EX] = ((tmp << 16) / *a);
-		*b /= *a;
+		tmp = (unsigned int)*b << 16 / *a;
+		reg[EX] = tmp;
+		*b = tmp >> 16;
 	}
 	cycle += 3;
 }
@@ -213,14 +206,15 @@ div(unsigned short *b, unsigned short *a)
 void
 dvi(unsigned short *b, unsigned short *a)
 {
-	int tmp = *b;
+	int tmp;
 
 	if (*a == 0) {
 		reg[EX] = 0;
 		*b = 0;
 	} else {
-		reg[EX] = ((tmp << 16) / *a);
-		*b /= *a;
+		tmp = (signed int)*b << 16 / (signed short)*a;
+		reg[EX] = tmp;
+		*b = tmp >> 16;
 	}
 	cycle += 3;
 }
@@ -242,7 +236,7 @@ mdi(unsigned short *b, unsigned short *a)
 	if (*a == 0)
 		*b = 0;
 	else
-		*b %= *a;
+		*b = (signed short)*b % *a;
 	cycle += 3;
 }
 
@@ -270,11 +264,7 @@ xor(unsigned short *b, unsigned short *a)
 void
 shr(unsigned short *b, unsigned short *a)
 {
-	int tmp = *b;
-
-	/* TODO */
-
-	reg[EX] = ((tmp << 16) >> *a);
+	reg[EX] = (((unsigned int)*b << 16) >> *a);
 	*b >>= *a;
 	cycle += 2;
 }
@@ -282,25 +272,15 @@ shr(unsigned short *b, unsigned short *a)
 void
 asr(unsigned short *b, unsigned short *a)
 {
-	int tmp = *b;
-	int top = *b | 0x8000;
-
-	/* TODO */
-
-	reg[EX] = ((tmp << 16) >> *a);
-	*b >>= *a;
-	*b |= top;
+	reg[EX] = (((unsigned int)*b << 16) >> *a);
+	*b = (signed short)*b >> *a;
 	cycle += 2;
 }
 
 void
 shl(unsigned short *b, unsigned short *a)
 {
-	int tmp = *b;
-
-	/* TODO */
-
-	reg[EX] = ((tmp << *a) >> 16);
+	reg[EX] = (((unsigned int)*b << *a) >> 16);
 	*b <<= *a;
 	cycle += 2;
 }
@@ -364,22 +344,20 @@ ifu(unsigned short *b, unsigned short *a)
 void
 adx(unsigned short *b, unsigned short *a)
 {
-	int tmp = *b;
+	int tmp = *b + *a + reg[EX];
 
-	/* TODO */
-	tmp += *a + reg[EX];
-	reg[EX] = tmp > 0xFFFF ? 0x0001 : 0;
+	reg[EX] = !!(tmp > 16);
+	*b = tmp;
 	cycle += 3;
 }
 
 void
 sbx(unsigned short *b, unsigned short *a)
 {
-	int tmp = *b;
+	int tmp = *b - *a + reg[EX];
 
-	/* TODO */
-	tmp -= *a + reg[EX];
-	reg[EX] = tmp < 0 ? 0x0001 : 0;
+	reg[EX] = -1 * !!(tmp >> 16);
+	*b = tmp;
 	cycle += 3;
 }
 
