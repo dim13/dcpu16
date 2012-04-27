@@ -1,4 +1,4 @@
-/* $Id: gramar.y,v 1.21 2012/04/27 13:25:06 demon Exp $ */
+/* $Id: gramar.y,v 1.22 2012/04/27 14:04:11 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -76,7 +76,7 @@ struct label {
 %token <ival> NUMBER
 %token <sval> STRING QSTRING
 
-%type <ival> register opcode operand expr extended noop
+%type <ival> register opcode operand expr extended noarg
 
 %left EOR
 %left EXOR
@@ -104,7 +104,7 @@ statement
 				popop(($2 << 10) | ($1 << 5));
 				popallr();
 	}
-	| noop			{ popop($1 << 5); }
+	| noarg			{ popop($1 << 5); }
 	| DP STRING		{ addref($2); }
 	| DAT data		{ popall(); }
 	| ORG expr		{ pc = $2; }
@@ -255,7 +255,7 @@ extended
 	| HWI			{ $$ = 0x12; }
 	;
 
-noop
+noarg
 	: NOP			{ $$ = 0x00; }
 	| BRK			{ $$ = 0x02; }
 	;
