@@ -1,4 +1,4 @@
-/* $Id: gramar.y,v 1.22 2012/04/27 14:04:11 demon Exp $ */
+/* $Id: gramar.y,v 1.23 2012/04/27 14:18:30 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -136,7 +136,7 @@ expr
 	| expr MINUS expr	{ $$ = $1 - $3; }
 	| expr EMUL expr	{ $$ = $1 * $3; }
 	| expr EDIV expr	{ $$ = $3 ? $1 / $3 : 0; }
-	| expr EMOD expr	{ $$ = $1 % $3; }
+	| expr EMOD expr	{ $$ = $3 ? $1 % $3 : 0; }
 	| expr EXOR expr	{ $$ = $1 ^ $3; }
 	| expr EAND expr	{ $$ = $1 & $3; }
 	| expr EOR expr		{ $$ = $1 | $3; }
