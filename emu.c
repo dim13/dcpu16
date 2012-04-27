@@ -1,4 +1,4 @@
-/* $Id: emu.c,v 1.20 2012/04/27 01:46:06 demon Exp $ */
+/* $Id: emu.c,v 1.21 2012/04/27 04:27:36 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -115,7 +115,7 @@ hwi(unsigned short *a)
 	cycle += 4;
 }
 
-void (*extop[nExt])(unsigned short *a) = {
+void (*extop[nExt])(unsigned short *) = {
 	[NOP] = nop,
 	[JSR] = jsr,
 	[BRK] = stop,
@@ -380,7 +380,7 @@ std(unsigned short *b, unsigned short *a)
 	cycle += 2;
 }
 
-void (*op[nOpt])(unsigned short *a, unsigned short *b) = {
+void (*op[nOpt])(unsigned short *, unsigned short *) = {
 	[EXT] = ext,
 	[SET] = set,
 	[ADD] = add,
@@ -486,7 +486,7 @@ fetcharg(int a, int barg)
 int
 step(unsigned short *m, unsigned short *r)
 {
-	unsigned short c, o, *a, *b, s;
+	unsigned short c, o, *a, *b, s, tmp;
 
 	if (!run)
 		return -1;
@@ -499,15 +499,9 @@ step(unsigned short *m, unsigned short *r)
 	s = reg[SP];		/* store SP */
 
 	o = c & 0x1f;
-		
-	/* don't fetch first arg for extended opcodes */
-	reg[Aux] = (c >> 5) & 0x1f;
-	b = o ? fetcharg(reg[Aux], 1) : &reg[Aux];
 	a = fetcharg((c >> 10) & 0x3f, 0);
-
-	#if 0
-	fprintf(stderr, "%x %x, %x\n", o, *b, *a);
-	#endif
+	tmp = (c >> 5) & 0x1f;
+	b = o ? fetcharg(tmp, 1) : &tmp;
 
 	if (skip) {
 		skip = 0;
@@ -516,7 +510,7 @@ step(unsigned short *m, unsigned short *r)
 		if (op[o])
 			op[o](b, a);
 		else {
-			warnx("wrong opcode 0x%x(0x%x, 0x%x)", o, *b, *a);
+			warnx("wrong opcode 0x%x (0x%x, 0x%x)", o, *b, *a);
 			++errors;
 		}
 	}

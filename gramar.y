@@ -1,4 +1,4 @@
-/* $Id: gramar.y,v 1.18 2012/04/26 20:33:24 demon Exp $ */
+/* $Id: gramar.y,v 1.19 2012/04/27 04:27:36 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -30,6 +30,7 @@ void yyerror(const char *, ...);
 void push(int, char *);
 void popop(int);
 void popall(void);
+void popallr(void);
 void addref(char *);
 
 #if YYDEBUG
@@ -83,7 +84,7 @@ struct label {
 %left SHIFTL SHIFTR
 %left PLUS MINUS
 %left EMUL EDIV EMOD
-%left ENOT UMINUS
+%left ENOT NEG
 
 %%
 
@@ -96,12 +97,12 @@ statement
 	: opcode operand COMMA operand
 	{
 				popop(($4 << 10) | ($2 << 5) | $1);
-				popall();
+				popallr();
 	}
 	| extended operand
 	{
 				popop(($2 << 10) | ($1 << 5));
-				popall();
+				popallr();
 	}
 	| noop			{ popop($1 << 5); }
 	| DP STRING		{ addref($2); }
@@ -129,7 +130,7 @@ block
 
 expr
 	: NUMBER		{ $$ = $1; }
-	| MINUS expr %prec UMINUS	{ $$ = -$2; }
+	| MINUS expr %prec NEG	{ $$ = -$2; }
 	| ENOT expr		{ $$ = ~$2; }
 	| expr PLUS expr	{ $$ = $1 + $3; }
 	| expr MINUS expr	{ $$ = $1 - $3; }
@@ -294,10 +295,20 @@ popall(void)
 {
 	int n = sp;
 
-	while (sp > 0) {
+	while (sp) {
 		buffer[pc] = stack[n - sp].val;
 		label[pc].label = stack[n - sp].label;
 		label[pc++].lineno = stack[n - sp--].lineno;
+	}
+}
+
+void
+popallr(void)
+{
+	while (sp) {
+		buffer[pc] = stack[--sp].val;
+		label[pc].label = stack[sp].label;
+		label[pc++].lineno = stack[sp].lineno;
 	}
 }
 
