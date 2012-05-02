@@ -1,4 +1,4 @@
-/* $Id: dcpu16.h,v 1.12 2012/04/27 13:25:06 demon Exp $ */
+/* $Id: dcpu16.h,v 1.13 2012/05/02 15:48:25 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -43,6 +43,21 @@ enum {	NOP, JSR, BRK,
 
 #define KEYB	0x9000
 #define KEYP	0x9010
+
+struct device {
+	unsigned int id;
+	unsigned int version;
+	unsigned int manufacturer;
+	void (*cb)(unsigned short *);
+	struct device *next;
+};
+
+struct context {
+	unsigned short mem[MEMSZ];
+	unsigned short reg[nReg];
+	struct device *dev;
+	int ndev;
+};
 
 /* display: 32x12 (128x96) + 16 pixel boarder, font 8x4 */
 
