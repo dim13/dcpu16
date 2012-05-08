@@ -1,4 +1,4 @@
-/* $Id: gui.c,v 1.19 2012/05/08 20:37:03 demon Exp $ */
+/* $Id: gui.c,v 1.20 2012/05/08 22:54:40 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -15,6 +15,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <sys/time.h>
 #include <SDL.h>
 #include <SDL_image.h>
 #include <err.h>
@@ -67,17 +68,21 @@ getpixel(SDL_Surface *s, int x, int y)
 }
 
 void
-drawglyph(SDL_Surface *s, int x, int y, unsigned short *m)
+drawglyph(SDL_Surface *s, int x, int y, unsigned short *m, int usec)
 {
 	SDL_Rect to;
 	Uint8 color[2], c, i;
-	unsigned short ch, *p;
+	unsigned short ch, blink, *p;
 
 	ch = m[DISP + y * 32 + x];
 	color[0] = (ch >> 8) & 0x0f;		/* bg */
 	color[1] = (ch >> 12) & 0x0f;		/* fg */
+	blink = ch & 0x80;
 	ch = (ch & 0x7f) << 1;
 	p = &m[CHARS + ch];
+
+	if (blink && (usec / 500000) % 2)
+		color[1] = color[0];
 
 	to.w = gl.w;
 	to.h = gl.h;
@@ -175,6 +180,7 @@ void
 guiemu(struct context *c)
 {
 	int x, y, cnt, n = 0;
+	struct timeval tv;
 
 	screen = SDL_SetVideoMode(real.w, real.h, 8, SDL_HWSURFACE|SDL_HWPALETTE);
 	SDL_SetColors(screen, color, 0, 16);
@@ -190,6 +196,8 @@ guiemu(struct context *c)
 		if ((n += cnt) < 100)
 			continue;
 
+		gettimeofday(&tv, NULL);
+
 		n = 0;
 
 		if (SDL_MUSTLOCK(screen) && SDL_LockSurface(screen))
@@ -199,7 +207,7 @@ guiemu(struct context *c)
 
 		for (x = 0; x < 32; x++)
 			for (y = 0; y < 12; y++)
-				drawglyph(scratch, x, y, c->mem);
+				drawglyph(scratch, x, y, c->mem, tv.tv_usec);
 
 		SDL_SoftStretch(scratch, &scr, screen, &real);
 
