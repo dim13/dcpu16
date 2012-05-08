@@ -1,4 +1,4 @@
-/* $Id: emu.c,v 1.26 2012/04/27 13:57:31 demon Exp $ */
+/* $Id: emu.c,v 1.27 2012/05/08 20:37:03 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -20,101 +20,98 @@
 #include <unistd.h>
 #include "dcpu16.h"
 
-static unsigned short *mem;
-static unsigned short *reg;
-
 static unsigned short skip = 0;
 static unsigned short run = 1;
 static unsigned short cycle = 0;
 static int errors = 0;
 
 void
-nop(unsigned short *a)
+nop(struct context *c, unsigned short *a)
 {
 	cycle += 1;
 }
 
 void
-jsr(unsigned short *a)
+jsr(struct context *c, unsigned short *a)
 {
-	mem[--reg[SP]] = reg[PC];
-	reg[PC] = *a;
+	c->mem[--c->reg[SP]] = c->reg[PC];
+	c->reg[PC] = *a;
 	cycle += 3;
 }
 
 void
-stop(unsigned short *a)
+stop(struct context *c, unsigned short *a)
 {
 	run = 0;
 	cycle += 1;
 }
 
 void
-hcf(unsigned short *a)
+hcf(struct context *c, unsigned short *a)
 {
 	/* TODO: halt catch fire */
 	cycle += 9;
 }
 
 void
-intr(unsigned short *a)
+intr(struct context *c, unsigned short *a)
 {
 	/* TODO */
 	cycle += 4;
 }
 
 void
-iag(unsigned short *a)
+iag(struct context *c, unsigned short *a)
 {
-	*a = reg[IA];
+	*a = c->reg[IA];
 	cycle += 1;
 }
 
 void
-ias(unsigned short *a)
+ias(struct context *c, unsigned short *a)
 {
-	reg[IA] = *a;
+	c->reg[IA] = *a;
 	cycle += 1;
 }
 
 void
-rfi(unsigned short *a)
+rfi(struct context *c, unsigned short *a)
 {
 	/* TODO */
-	*a = mem[reg[SP]++];
-	reg[PC] = mem[reg[SP]++];
+	*a = c->mem[c->reg[SP]++];
+	c->reg[PC] = c->mem[c->reg[SP]++];
 	cycle += 3;
 }
 
 void
-iaq(unsigned short *a)
+iaq(struct context *c, unsigned short *a)
 {
 	/* TODO */
 	cycle += 2;
 }
 
 void
-hwn(unsigned short *a)
+hwn(struct context *c, unsigned short *a)
 {
 	/* TODO */
 	cycle += 2;
 }
 
 void
-hwq(unsigned short *a)
+hwq(struct context *c, unsigned short *a)
 {
 	/* TODO */
 	cycle += 4;
 }
 
 void
-hwi(unsigned short *a)
+hwi(struct context *c, unsigned short *a)
 {
 	/* TODO */
 	cycle += 4;
 }
 
-void (*extop[nExt])(unsigned short *) = {
+void (*extop[nExt])(struct context *, unsigned short *) = {
 	[NOP] = nop,
 	[JSR] = jsr,
 	[BRK] = stop,
@@ -130,10 +127,10 @@ void (*extop[nExt])(unsigned short *) = {
 };
 
 void
-ext(unsigned short *b, unsigned short *a)
+ext(struct context *c, unsigned short *b, unsigned short *a)
 {
 	if (extop[*b])
-		extop[*b](a);
+		extop[*b](c, a);
 	else {
 		warnx("wrong extended opcode 0x%x (0x%x)", *b, *a);
 		++errors;
@@ -141,85 +138,85 @@ ext(unsigned short *b, unsigned short *a)
 }
 
 void
-set(unsigned short *b, unsigned short *a)
+set(struct context *c, unsigned short *b, unsigned short *a)
 {
 	*b = *a;
 	cycle += 1;
 }
 
 void
-add(unsigned short *b, unsigned short *a)
+add(struct context *c, unsigned short *b, unsigned short *a)
 {
 	int tmp = *b + *a;
 
-	reg[EX] = tmp >> 16;
+	c->reg[EX] = tmp >> 16;
 	*b = tmp;
 	cycle += 2;
 }
 
 void
-sub(unsigned short *b, unsigned short *a)
+sub(struct context *c, unsigned short *b, unsigned short *a)
 {
 	int tmp = *b - *a;
 
-	reg[EX] = tmp >> 16;
+	c->reg[EX] = tmp >> 16;
 	*b = tmp;
 	cycle += 2;
 }
 
 void
-mul(unsigned short *b, unsigned short *a)
+mul(struct context *c, unsigned short *b, unsigned short *a)
 {
 	int tmp = *b * *a;
 
-	reg[EX] = tmp >> 16;
+	c->reg[EX] = tmp >> 16;
 	*b = tmp;
 	cycle += 2;
 }
 
 void
-mli(unsigned short *b, unsigned short *a)
+mli(struct context *c, unsigned short *b, unsigned short *a)
 {
 	int tmp = (signed short)*b * (signed short)*b;
-	reg[EX] = tmp >> 16;
+	c->reg[EX] = tmp >> 16;
 	*b = tmp;
 	cycle += 2;
 }
 
 void
-div(unsigned short *b, unsigned short *a)
+div(struct context *c, unsigned short *b, unsigned short *a)
 {
 	int tmp;
 
 	if (*a == 0) {
-		reg[EX] = 0;
+		c->reg[EX] = 0;
 		*b = 0;
 	} else {
 		tmp = ((unsigned int)*b << 16) / *a;
-		reg[EX] = tmp;
+		c->reg[EX] = tmp;
 		*b = tmp >> 16;
 	}
 	cycle += 3;
 }
 
 void
-dvi(unsigned short *b, unsigned short *a)
+dvi(struct context *c, unsigned short *b, unsigned short *a)
 {
 	int tmp;
 
 	if (*a == 0) {
-		reg[EX] = 0;
+		c->reg[EX] = 0;
 		*b = 0;
 	} else {
 		tmp = ((signed int)*b << 16) / (signed short)*a;
-		reg[EX] = tmp;
+		c->reg[EX] = tmp;
 		*b = tmp >> 16;
 	}
 	cycle += 3;
 }
 
 void
-mod(unsigned short *b, unsigned short *a)
+mod(struct context *c, unsigned short *b, unsigned short *a)
 {
 	if (*a == 0)
 		*b = 0;
@@ -229,7 +226,7 @@ mod(unsigned short *b, unsigned short *a)
 }
 
 void
-mdi(unsigned short *b, unsigned short *a)
+mdi(struct context *c, unsigned short *b, unsigned short *a)
 {
 	/* TODO */
 	if (*a == 0)
@@ -240,146 +237,145 @@ mdi(unsigned short *b, unsigned short *a)
 }
 
 void
-and(unsigned short *b, unsigned short *a)
+and(struct context *c, unsigned short *b, unsigned short *a)
 {
 	*b &= *a;
 	cycle += 1;
 }
 
 void
-bor(unsigned short *b, unsigned short *a)
+bor(struct context *c, unsigned short *b, unsigned short *a)
 {
 	*b |= *a;
 	cycle += 1;
 }
 
 void
-xor(unsigned short *b, unsigned short *a)
+xor(struct context *c, unsigned short *b, unsigned short *a)
 {
 	*b ^= *a;
 	cycle += 1;
 }
 
 void
-shr(unsigned short *b, unsigned short *a)
+shr(struct context *c, unsigned short *b, unsigned short *a)
 {
-	reg[EX] = (((unsigned int)*b << 16) >> *a);
+	c->reg[EX] = (((unsigned int)*b << 16) >> *a);
 	*b >>= *a;
 	cycle += 1;
 }
 
 void
-asr(unsigned short *b, unsigned short *a)
+asr(struct context *c, unsigned short *b, unsigned short *a)
 {
-	reg[EX] = (((unsigned int)*b << 16) >> *a);
+	c->reg[EX] = (((unsigned int)*b << 16) >> *a);
 	*b = (signed short)*b >> *a;
 	cycle += 1;
 }
 
 void
-shl(unsigned short *b, unsigned short *a)
+shl(struct context *c, unsigned short *b, unsigned short *a)
 {
-	reg[EX] = (((unsigned int)*b << *a) >> 16);
+	c->reg[EX] = (((unsigned int)*b << *a) >> 16);
 	*b <<= *a;
 	cycle += 1;
 }
 
 void
-ifb(unsigned short *b, unsigned short *a)
+ifb(struct context *c, unsigned short *b, unsigned short *a)
 {
 	skip = !(*b & *a);
 	cycle += 2 + skip;
 }
 
 void
-ifc(unsigned short *b, unsigned short *a)
+ifc(struct context *c, unsigned short *b, unsigned short *a)
 {
 	skip = (*b & *a);
 	cycle += 2 + skip;
 }
 
 void
-ife(unsigned short *b, unsigned short *a)
+ife(struct context *c, unsigned short *b, unsigned short *a)
 {
 	skip = !(*b == *a);
 	cycle += 2 + skip;
 }
 
 void
-ifn(unsigned short *b, unsigned short *a)
+ifn(struct context *c, unsigned short *b, unsigned short *a)
 {
 	skip = (*b == *a);
 	cycle += 2 + skip;
 }
 
 void
-ifg(unsigned short *b, unsigned short *a)
+ifg(struct context *c, unsigned short *b, unsigned short *a)
 {
 	skip = !(*b > *a);
 	cycle += 2 + skip;
 }
 
 void
-ifa(unsigned short *b, unsigned short *a)
+ifa(struct context *c, unsigned short *b, unsigned short *a)
 {
 	skip = !((signed short)*b > (signed short)*a);
 	cycle += 2 + skip;
 }
 
 void
-ifl(unsigned short *b, unsigned short *a)
+ifl(struct context *c, unsigned short *b, unsigned short *a)
 {
 	skip = !(*b < *a);
 	cycle += 2 + skip;
 }
 
 void
-ifu(unsigned short *b, unsigned short *a)
+ifu(struct context *c, unsigned short *b, unsigned short *a)
 {
 	skip = !((signed short)*b < (signed short)*a);
 	cycle += 2 + skip;
 }
 
 void
-adx(unsigned short *b, unsigned short *a)
+adx(struct context *c, unsigned short *b, unsigned short *a)
 {
-	int tmp = *b + *a + reg[EX];
+	int tmp = *b + *a + c->reg[EX];
 
-	reg[EX] = tmp > 16;
+	c->reg[EX] = tmp > 16;
 	*b = tmp;
 	cycle += 3;
 }
 
 void
-sbx(unsigned short *b, unsigned short *a)
+sbx(struct context *c, unsigned short *b, unsigned short *a)
 {
-	int tmp = *b - *a + reg[EX];
+	int tmp = *b - *a + c->reg[EX];
 
-	reg[EX] = tmp >> 16;
+	c->reg[EX] = tmp >> 16;
 	*b = tmp;
 	cycle += 3;
 }
 
-
 void
-sti(unsigned short *b, unsigned short *a)
+sti(struct context *c, unsigned short *b, unsigned short *a)
 {
 	*b = *a;
-	++reg[I];
-	++reg[J];
+	++c->reg[I];
+	++c->reg[J];
 	cycle += 2;
 }
 
 void
-std(unsigned short *b, unsigned short *a)
+std(struct context *c, unsigned short *b, unsigned short *a)
 {
 	*b = *a;
-	--reg[I];
-	--reg[J];
+	--c->reg[I];
+	--c->reg[J];
 	cycle += 2;
 }
 
-void (*op[nOpt])(unsigned short *, unsigned short *) = {
+void (*op[nOpt])(struct context *, unsigned short *, unsigned short *) = {
 	[EXT] = ext,
 	[SET] = set,
 	[ADD] = add,
@@ -412,7 +408,7 @@ void (*op[nOpt])(unsigned short *, unsigned short *) = {
 };
 
 unsigned short *
-fetcharg(int a, int barg)
+fetcharg(struct context *c, int a, int barg)
 {
 	switch (a) {
 	case 0x00:
@@ -424,7 +420,7 @@ fetcharg(int a, int barg)
 	case 0x06:
 	case 0x07:
 		/* register */
-		return &reg[a];
+		return &c->reg[a];
 	case 0x08:
 	case 0x09:
 	case 0x0a:
@@ -434,7 +430,7 @@ fetcharg(int a, int barg)
 	case 0x0e:
 	case 0x0f:
 		/* [register] */
-		return &mem[reg[a - 0x08]];
+		return &c->mem[c->reg[a - 0x08]];
 	case 0x10:
 	case 0x11:
 	case 0x12:
@@ -445,69 +441,67 @@ fetcharg(int a, int barg)
 	case 0x17:
 		/* [next word + register] */
 		cycle += 1;
-		return &mem[mem[reg[PC]++] + reg[a - 0x10]];
+		return &c->mem[c->mem[c->reg[PC]++] + c->reg[a - 0x10]];
 	case 0x18:
 		/* TODO push or pop */
 		if (barg)
-			return &mem[--reg[SP]];	/* push */
+			return &c->mem[--c->reg[SP]];	/* push */
 		else
-			return &mem[reg[SP]++];	/* pop */
+			return &c->mem[c->reg[SP]++];	/* pop */
 	case 0x19:
 		/* peek */
-		return &mem[reg[SP]];
+		return &c->mem[c->reg[SP]];
 	case 0x1a:
 		/* pick */
-		return &mem[reg[SP] + reg[PC]++];
+		return &c->mem[c->reg[SP] + c->reg[PC]++];
 	case 0x1b:
 		/* SP */
-		return &reg[SP];
+		return &c->reg[SP];
 	case 0x1c:
 		/* PC */
-		return &reg[PC];
+		return &c->reg[PC];
 	case 0x1d:
 		/* EX */
-		return &reg[EX];
+		return &c->reg[EX];
 	case 0x1e:
 		/* [next word] */
 		cycle += 1;
-		return &mem[mem[reg[PC]++]];
+		return &c->mem[c->mem[c->reg[PC]++]];
 	case 0x1f:
 		/* next word */
 		cycle += 1;
-		return &mem[reg[PC]++];
+		return &c->mem[c->reg[PC]++];
 	default:
 		/* literal */
-		reg[Aux] = a - 0x20 - 1;
-		return &reg[Aux];
+		c->reg[Aux] = a - 0x20 - 1;
+		return &c->reg[Aux];
 	}
 }
 
 int
-step(unsigned short *m, unsigned short *r)
+step(struct context *c)
 {
-	unsigned short c, o, *a, *b, s, tmp;
+	unsigned short ch, o, *a, *b, s, tmp;
 
 	if (!run || errors > 3)
 		return -1;
 
-	mem = m;
-	reg = r;
 	cycle = 0;
 
-	c = mem[reg[PC]++];
-	s = reg[SP];		/* store SP */
+	ch = c->mem[c->reg[PC]++];
+	s = c->reg[SP];		/* store SP */
 
-	o = c & 0x1f;
-	a = fetcharg((c >> 10) & 0x3f, 0);
-	tmp = (c >> 5) & 0x1f;
-	b = o ? fetcharg(tmp, 1) : &tmp;
+	o = ch & 0x1f;
+	a = fetcharg(c, (ch >> 10) & 0x3f, 0);
+	tmp = (ch >> 5) & 0x1f;
+	b = o ? fetcharg(c, tmp, 1) : &tmp;
 
 	if (skip) {
 		skip = 0;
-		reg[SP] = s;	/* restore SP on skipped opcode */
+		c->reg[SP] = s;	/* restore SP on skipped opcode */
 	} else {
 		if (op[o])
-			op[o](b, a);
+			op[o](c, b, a);
 		else {
 			warnx("wrong opcode 0x%x (0x%x, 0x%x)", o, *b, *a);
 			++errors;

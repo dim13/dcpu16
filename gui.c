@@ -1,4 +1,4 @@
-/* $Id: gui.c,v 1.18 2012/04/27 13:01:22 demon Exp $ */
+/* $Id: gui.c,v 1.19 2012/05/08 20:37:03 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -172,9 +172,9 @@ loadfont(unsigned short *m, char *font)
 }
 
 void
-guiemu(unsigned short *m, unsigned short *r)
+guiemu(struct context *c)
 {
-	int x, y, c, n = 0;
+	int x, y, cnt, n = 0;
 
 	screen = SDL_SetVideoMode(real.w, real.h, 8, SDL_HWSURFACE|SDL_HWPALETTE);
 	SDL_SetColors(screen, color, 0, 16);
@@ -184,10 +184,10 @@ guiemu(unsigned short *m, unsigned short *r)
 
 	atexit(SDL_Quit);
 
-	loadfont(m, "font.xpm");
+	loadfont(c->mem, "font.xpm");
 
-	while ((c = step(m, r)) != -1) {
-		if ((n += c) < 100)
+	while ((cnt = step(c)) != -1) {
+		if ((n += cnt) < 100)
 			continue;
 
 		n = 0;
@@ -195,11 +195,11 @@ guiemu(unsigned short *m, unsigned short *r)
 		if (SDL_MUSTLOCK(screen) && SDL_LockSurface(screen))
 			continue;
 
-		SDL_FillRect(scratch, &scr, m[BORDER] & 0x0f);
+		SDL_FillRect(scratch, &scr, c->mem[BORDER] & 0x0f);
 
 		for (x = 0; x < 32; x++)
 			for (y = 0; y < 12; y++)
-				drawglyph(scratch, x, y, m);
+				drawglyph(scratch, x, y, c->mem);
 
 		SDL_SoftStretch(scratch, &scr, screen, &real);
 
@@ -208,7 +208,7 @@ guiemu(unsigned short *m, unsigned short *r)
 		if (SDL_MUSTLOCK(screen))
 			SDL_UnlockSurface(screen);
 
-		if (keyboard(m) == -1)
+		if (keyboard(c->mem) == -1)
 			break;
 	}
 

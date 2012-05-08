@@ -1,4 +1,4 @@
-/* $Id: dcpu16.h,v 1.13 2012/05/02 15:48:25 demon Exp $ */
+/* $Id: dcpu16.h,v 1.14 2012/05/08 20:37:03 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -44,14 +44,6 @@ enum {	NOP, JSR, BRK,
 #define KEYB	0x9000
 #define KEYP	0x9010
 
-struct device {
-	unsigned int id;
-	unsigned int version;
-	unsigned int manufacturer;
-	void (*cb)(unsigned short *);
-	struct device *next;
-};
-
 struct context {
 	unsigned short mem[MEMSZ];
 	unsigned short reg[nReg];
@@ -59,12 +51,20 @@ struct context {
 	int ndev;
 };
 
+struct device {
+	unsigned int id;
+	unsigned int version;
+	unsigned int manufacturer;
+	void (*cb)(struct context *);
+	struct device *next;
+};
+
 /* display: 32x12 (128x96) + 16 pixel boarder, font 8x4 */
 
-unsigned short *compile(FILE *, size_t);
-int step(unsigned short *, unsigned short *);
-void tuiemu(unsigned short *, unsigned short *);
-void guiemu(unsigned short *, unsigned short *);
-void dumpcode(unsigned short *, unsigned short *);
+int compile(FILE *, unsigned short *, size_t);
+int step(struct context *);
+void tuiemu(struct context *);
+void guiemu(struct context *);
+void dumpcode(struct context *);
 
 #endif

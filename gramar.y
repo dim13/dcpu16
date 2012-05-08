@@ -1,4 +1,4 @@
-/* $Id: gramar.y,v 1.25 2012/04/27 14:31:04 demon Exp $ */
+/* $Id: gramar.y,v 1.26 2012/05/08 20:37:03 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -344,10 +344,10 @@ restorerefs(void)
 			buffer[i] = findref(&label[i]);
 }
 
-unsigned short *
-compile(FILE *fd, size_t sz)
+int
+compile(FILE *fd, unsigned short *mem, size_t sz)
 {
-	buffer = calloc(sz, sizeof(unsigned short));
+	buffer = mem;
 	label = calloc(sz, sizeof(struct label));
 	stack = calloc(sz, sizeof(struct pair));
 	ref = calloc(sz, sizeof(struct pair));
@@ -364,10 +364,5 @@ compile(FILE *fd, size_t sz)
 	free(stack);
 	free(label);
 
-	if (haserrors) {
-		free(buffer);
-		buffer = NULL;
-	}
-
-	return buffer;
+	return haserrors;
 }

@@ -1,4 +1,4 @@
-/* $Id: tui.c,v 1.6 2012/04/27 04:44:51 demon Exp $ */
+/* $Id: tui.c,v 1.7 2012/05/08 20:37:03 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -26,7 +26,7 @@
 WINDOW	*outbox, *out, *regbox, *regs, *code;
 
 void
-dumpmem(unsigned short *m)
+dumpmem(struct context *c)
 {
 	int i, k, sum, lines = 0;
 
@@ -34,14 +34,14 @@ dumpmem(unsigned short *m)
 
 	for (lines = 0, i = 0; i < MEMSZ; i += 8) {
 		for (sum = 0, k = 0; k < 8; k++)
-			sum |= m[i + k];
+			sum |= c->mem[i + k];
 		if (!sum)
 			continue;
 		if (++lines > 24)
 			break;
 		wprintw(code, "%4.4x:", i);
 		for (k = 0; k < 8; k++)
-			wprintw(code, "%5.4x", m[i + k]);
+			wprintw(code, "%5.4x", c->mem[i + k]);
 		wprintw(code, "\n");
 	}
 
@@ -49,33 +49,33 @@ dumpmem(unsigned short *m)
 }
 
 void
-dumpdisp(unsigned short *m)
+dumpdisp(struct context *c)
 {
 	int i;
-	char c, b, hbg, bg, hfg, fg, col;
+	char ch, b, hbg, bg, hfg, fg, col;
 
 	wmove(out, 0, 0);
 
 	for (i = DISP; i < DISPEND; i++) {
-		c = m[i] & 0x7f;
+		ch = c->mem[i] & 0x7f;
 
-		b = (m[i] >> 7) & 0x01;
-		bg = (m[i] >> 8) & 0x07;
-		hbg = (m[i] >> 11) & 0x01;
-		fg = (m[i] >> 12) & 0x07;
-		hfg = (m[i] >> 15) & 0x01;
+		b = (c->mem[i] >> 7) & 0x01;
+		bg = (c->mem[i] >> 8) & 0x07;
+		hbg = (c->mem[i] >> 11) & 0x01;
+		fg = (c->mem[i] >> 12) & 0x07;
+		hfg = (c->mem[i] >> 15) & 0x01;
 
 		col = (fg << 3) | bg;
 
-		if (!(isascii(c) && isprint(c)))
-			c = ' ';
+		if (!(isascii(ch) && isprint(ch)))
+			ch = ' ';
 
 		if (b)
 			wattron(out, A_BLINK);
 		if (hfg)
 			wattron(out, A_BOLD);
 		wattron(out, COLOR_PAIR(col));
-		waddch(out, c);
+		waddch(out, ch);
 		wattroff(out, COLOR_PAIR(col));
 		if (hfg)
 			wattroff(out, A_BOLD);
@@ -87,24 +87,35 @@ dumpdisp(unsigned short *m)
 }
 
 void
-dumpreg(unsigned short *mem, unsigned short *reg)
+dumpreg(struct context *c)
 {
 	wmove(regs, 0, 0);
  
-	mvwprintw(regs, 0,  0, " A: %4.4x [%4.4x]", reg[A], mem[reg[A]]);
-	mvwprintw(regs, 1,  0, " B: %4.4x [%4.4x]", reg[B], mem[reg[B]]);
-	mvwprintw(regs, 2,  0, " C: %4.4x [%4.4x]", reg[C], mem[reg[C]]);
+	mvwprintw(regs, 0,  0, " A: %4.4x [%4.4x]",
+		c->reg[A], c->mem[c->reg[A]]);
+	mvwprintw(regs, 1,  0, " B: %4.4x [%4.4x]",
+		c->reg[B], c->mem[c->reg[B]]);
+	mvwprintw(regs, 2,  0, " C: %4.4x [%4.4x]",
+		c->reg[C], c->mem[c->reg[C]]);
  
-	mvwprintw(regs, 3,  0, " X: %4.4x [%4.4x]", reg[X], mem[reg[X]]);
-	mvwprintw(regs, 4,  0, " Y: %4.4x [%4.4x]", reg[Y], mem[reg[Y]]);
-	mvwprintw(regs, 5,  0, " Z: %4.4x [%4.4x]", reg[Z], mem[reg[Z]]);
+	mvwprintw(regs, 3,  0, " X: %4.4x [%4.4x]",
+		c->reg[X], c->mem[c->reg[X]]);
+	mvwprintw(regs, 4,  0, " Y: %4.4x [%4.4x]",
+		c->reg[Y], c->mem[c->reg[Y]]);
+	mvwprintw(regs, 5,  0, " Z: %4.4x [%4.4x]",
+		c->reg[Z], c->mem[c->reg[Z]]);
 
-	mvwprintw(regs, 6,  0, " I: %4.4x [%4.4x]", reg[I], mem[reg[I]]);
-	mvwprintw(regs, 7,  0, " J: %4.4x [%4.4x]", reg[J], mem[reg[J]]);
+	mvwprintw(regs, 6,  0, " I: %4.4x [%4.4x]",
+		c->reg[I], c->mem[c->reg[I]]);
+	mvwprintw(regs, 7,  0, " J: %4.4x [%4.4x]",
+		c->reg[J], c->mem[c->reg[J]]);
 
-	mvwprintw(regs, 0, 16, "PC: %4.4x [%4.4x]", reg[PC], mem[reg[PC]]);
-	mvwprintw(regs, 1, 16, "SP: %4.4x [%4.4x]", reg[SP], mem[reg[SP]]);
-	mvwprintw(regs, 2, 16, "EX: %4.4x [%4.4x]", reg[EX], mem[reg[EX]]);
+	mvwprintw(regs, 0, 16, "PC: %4.4x [%4.4x]",
+		c->reg[PC], c->mem[c->reg[PC]]);
+	mvwprintw(regs, 1, 16, "SP: %4.4x [%4.4x]",
+		c->reg[SP], c->mem[c->reg[SP]]);
+	mvwprintw(regs, 2, 16, "EX: %4.4x [%4.4x]",
+		c->reg[EX], c->mem[c->reg[EX]]);
 
 	wnoutrefresh(regs);
 }
@@ -125,7 +136,7 @@ init_colors()
 }
 
 void
-tuiemu(unsigned short *m, unsigned short *r)
+tuiemu(struct context *c)
 {
 	int ch;
 
@@ -149,16 +160,16 @@ tuiemu(unsigned short *m, unsigned short *r)
 
 	code = derwin(stdscr, 24, 46, 0, 0);
 
-	m[KEYP] = KEYB;
+	c->mem[KEYP] = KEYB;
 
-	while (step(m, r) != -1) {
-		dumpmem(m);
-		dumpdisp(m);
-		dumpreg(m, r);
+	while (step(c) != -1) {
+		dumpmem(c);
+		dumpdisp(c);
+		dumpreg(c);
 
 		if ((ch = wgetch(stdscr)) != ERR) {
-			m[m[KEYP]] = ch;
-			m[KEYP] = KEYB + (m[KEYP] + 1) % 0x10;
+			c->mem[c->mem[KEYP]] = ch;
+			c->mem[KEYP] = KEYB + (c->mem[KEYP] + 1) % 0x10;
 		}
 
 		doupdate();

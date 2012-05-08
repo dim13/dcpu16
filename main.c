@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.5 2012/04/24 18:59:06 demon Exp $ */
+/* $Id: main.c,v 1.6 2012/05/08 20:37:03 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -18,25 +18,26 @@
 #include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include "dcpu16.h"
 
-void (*emu)(unsigned short *, unsigned short *);
+void (*emu)(struct context *);
 
 void
-dumpcode(unsigned short *m, unsigned short *r)
+dumpcode(struct context *c)
 {
 	int i, k, sum;
 
 	for (i = 0; i < MEMSZ; i += 8) {
 		sum = 0;
 		for (k = 0; k < 8; k++)
-			sum += m[i + k];
+			sum += c->mem[i + k];
 		if (!sum)
 			continue;
 		printf("%4.4x:", i);
 		for (k = 0; k < 8; k++)
-			printf("%5.4x", m[i + k]);
+			printf("%5.4x", c->mem[i + k]);
 		printf("\n");
 	}
 }
@@ -53,8 +54,7 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-	unsigned short *m;
-	unsigned short r[nReg] = { 0 };
+	struct context c;
 	FILE *fd;
 	int ch;
 
@@ -83,12 +83,13 @@ main(int argc, char **argv)
 	if (!fd)
 		err(1, "cannot open file");
 
-	m = compile(fd, MEMSZ);
-	fclose(fd);
-	if (!m)
+	bzero(&c, sizeof(c));
+	if (compile(fd, c.mem, MEMSZ))
 		errx(1, "compilation errors");
 
-	emu(m, r);
+	fclose(fd);
+
+	emu(&c);
 
 	return 0;
 }
