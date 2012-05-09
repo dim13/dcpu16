@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.7 2012/05/09 00:03:40 demon Exp $ */
+/* $Id: main.c,v 1.8 2012/05/09 01:34:43 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -27,18 +27,16 @@ void (*emu)(struct context *);
 void
 dumpcode(struct context *c)
 {
-	int i, k, sum;
+	int i, k;
 
-	for (i = 0; i < MEMSZ; i += 8) {
-		sum = 0;
-		for (k = 0; k < 8; k++)
-			sum += c->mem[i + k];
-		if (!sum)
-			continue;
-		printf("%4.4x:", i);
-		for (k = 0; k < 8; k++)
-			printf("%5.4x", c->mem[i + k]);
-		printf("\n");
+	for (i = 0; i < c->proglen; i += 8) {
+		printf("DAT ");
+		for (k = 0; k < 8; k++) {
+			printf("0x%.4x", c->mem[i + k]);
+			if ((k + 1) % 8)
+				printf(", ");
+		}
+		printf("; @ 0x%.4x\n", i);
 	}
 }
 
@@ -49,6 +47,19 @@ usage(void)
 
 	(void)fprintf(stderr, "Usage: %s [-eg]\n", __progname);
 	exit(1);
+}
+
+void
+addhw(struct context *c,
+	unsigned int id, unsigned short ver, unsigned int manu,
+	void (*cb)(struct context *))
+{
+	struct device *d = &c->dev[c->ndev++];
+
+	d->id = id;
+	d->version = ver;
+	d->manu = manu;
+	d->cb = cb;
 }
 
 int
@@ -84,14 +95,15 @@ main(int argc, char **argv)
 		err(1, "cannot open file");
 
 	bzero(&c, sizeof(c));
-	if (compile(fd, c.mem, MEMSZ))
+	if (!(c.proglen = compile(fd, c.mem, MEMSZ)))
 		errx(1, "compilation errors");
 
 	fclose(fd);
 
-	register_lem(&c);
-	register_keyb(&c);
-	register_clk(&c);
+	addhw(&c, 0x7349f615, 0x1802, 0x1c6c8b36, lem);
+	addhw(&c, 0x30cf7406, 1, 0, keyb);
+	addhw(&c, 0x12d0b402, 1, 0, clk);
+
 	emu(&c);
 
 	return 0;

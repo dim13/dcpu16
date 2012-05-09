@@ -1,4 +1,4 @@
-/* $Id: lem1802.c,v 1.1 2012/05/09 00:03:40 demon Exp $ */
+/* $Id: lem1802.c,v 1.2 2012/05/09 01:34:43 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -45,15 +45,4 @@ lem(struct context *c)
 	default:
 		break;
 	}
-}
-
-void
-register_lem(struct context *c)
-{
-	struct device *d = &c->dev[++c->ndev];
-
-	d->id = 0x7349f615;
-	d->version = 0x1802;
-	d->manu = 0x1c6c8b36;
-	d->cb = lem;
 }

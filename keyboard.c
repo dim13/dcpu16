@@ -1,4 +1,4 @@
-/* $Id: keyboard.c,v 1.1 2012/05/09 00:03:40 demon Exp $ */
+/* $Id: keyboard.c,v 1.2 2012/05/09 01:34:43 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -39,15 +39,4 @@ keyb(struct context *c)
 	default:
 		break;
 	}
-}
-
-void
-register_keyb(struct context *c)
-{
-	struct device *d = &c->dev[++c->ndev];
-
-	d->id = 0x30cf7406;
-	d->version = 0x1;
-	d->manu = 0;
-	d->cb = keyb;
 }

@@ -1,4 +1,4 @@
-/* $Id: clock.c,v 1.1 2012/05/09 00:03:40 demon Exp $ */
+/* $Id: clock.c,v 1.2 2012/05/09 01:34:43 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -36,15 +36,4 @@ clk(struct context *c)
 	default:
 		break;
 	}
-}
-
-void
-register_clk(struct context *c)
-{
-	struct device *d = &c->dev[++c->ndev];
-
-	d->id = 0x12d0b402;
-	d->version = 0x1;
-	d->manu = 0;
-	d->cb = clk;
 }

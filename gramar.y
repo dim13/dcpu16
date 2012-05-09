@@ -1,4 +1,4 @@
-/* $Id: gramar.y,v 1.26 2012/05/08 20:37:03 demon Exp $ */
+/* $Id: gramar.y,v 1.27 2012/05/09 01:34:43 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -364,5 +364,5 @@ compile(FILE *fd, unsigned short *mem, size_t sz)
 	free(stack);
 	free(label);
 
-	return haserrors;
+	return haserrors ? 0 : pc;
 }
