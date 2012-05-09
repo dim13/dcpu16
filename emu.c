@@ -1,4 +1,4 @@
-/* $Id: emu.c,v 1.27 2012/05/08 20:37:03 demon Exp $ */
+/* $Id: emu.c,v 1.28 2012/05/09 00:03:40 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -94,20 +94,36 @@ void
 hwn(struct context *c, unsigned short *a)
 {
 	/* TODO */
+	*a = c->ndev;
 	cycle += 2;
 }
 
 void
 hwq(struct context *c, unsigned short *a)
 {
-	/* TODO */
+	struct device *d = &c->dev[*a];
+
+	c->reg[A] = d->id;
+	c->reg[B] = d->id >> 16;
+	c->reg[C] = d->version;
+	c->reg[X] = d->manu;
+	c->reg[Y] = d->manu >> 16;
+	
 	cycle += 4;
 }
 
 void
 hwi(struct context *c, unsigned short *a)
 {
-	/* TODO */
+	struct device *d = &c->dev[*a];
+
+	if (d->cb) {
+		d->cb(c);
+	} else {
+		warnx("invalid device %d", *a);
+		errors++;
+	}
+
 	cycle += 4;
 }
 

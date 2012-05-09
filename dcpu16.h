@@ -1,4 +1,4 @@
-/* $Id: dcpu16.h,v 1.14 2012/05/08 20:37:03 demon Exp $ */
+/* $Id: dcpu16.h,v 1.15 2012/05/09 00:03:40 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -47,16 +47,13 @@ enum {	NOP, JSR, BRK,
 struct context {
 	unsigned short mem[MEMSZ];
 	unsigned short reg[nReg];
-	struct device *dev;
+	struct device {
+		unsigned int id;
+		unsigned int version;
+		unsigned int manu;
+		void (*cb)(struct context *);
+	} dev[256];
 	int ndev;
-};
-
-struct device {
-	unsigned int id;
-	unsigned int version;
-	unsigned int manufacturer;
-	void (*cb)(struct context *);
-	struct device *next;
 };
 
 /* display: 32x12 (128x96) + 16 pixel boarder, font 8x4 */

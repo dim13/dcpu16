@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.6 2012/05/08 20:37:03 demon Exp $ */
+/* $Id: main.c,v 1.7 2012/05/09 00:03:40 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -89,6 +89,9 @@ main(int argc, char **argv)
 
 	fclose(fd);
 
+	register_lem(&c);
+	register_keyb(&c);
+	register_clk(&c);
 	emu(&c);
 
 	return 0;
