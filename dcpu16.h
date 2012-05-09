@@ -1,4 +1,4 @@
-/* $Id: dcpu16.h,v 1.17 2012/05/09 01:34:43 demon Exp $ */
+/* $Id: dcpu16.h,v 1.18 2012/05/09 10:47:21 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -53,8 +53,11 @@ struct context {
 		unsigned int manu;
 		void (*cb)(struct context *);
 	} dev[MEMSZ];
-	int ndev;
-	int proglen;
+	unsigned short ndev;
+	unsigned short proglen;
+	unsigned short screen;
+	unsigned short font;
+	unsigned short palette;
 };
 
 /* display: 32x12 (128x96) + 16 pixel boarder, font 8x4 */
