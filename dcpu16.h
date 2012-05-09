@@ -1,4 +1,4 @@
-/* $Id: dcpu16.h,v 1.15 2012/05/09 00:03:40 demon Exp $ */
+/* $Id: dcpu16.h,v 1.16 2012/05/09 00:04:17 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -63,5 +63,8 @@ int step(struct context *);
 void tuiemu(struct context *);
 void guiemu(struct context *);
 void dumpcode(struct context *);
+void register_lem(struct context *);
+void register_keyb(struct context *);
+void register_clk(struct context *);
 
 #endif
