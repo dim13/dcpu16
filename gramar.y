@@ -1,4 +1,4 @@
-/* $Id: gramar.y,v 1.27 2012/05/09 01:34:43 demon Exp $ */
+/* $Id: gramar.y,v 1.28 2012/08/06 18:38:40 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -57,7 +57,7 @@ struct label {
 %}
 
 %union {
-	int ival;
+	short ival;
 	char *sval;
 };
 
@@ -149,9 +149,21 @@ operand
 	: register		{ $$ = $1; }
 	| LBR register RBR	{ $$ = 0x08 + $2; }
 	| PUSH			{ $$ = 0x18; }
+	| LBR MINUS MINUS SP RBR{ $$ = 0x18; }
 	| POP			{ $$ = 0x18; }
+	| LBR SP PLUS PLUS RBR	{ $$ = 0x18; }
 	| PEEK			{ $$ = 0x19; }
-	| PICK			{ $$ = 0x1a; }
+	| LBR SP RBR		{ $$ = 0x19; }
+	| PICK expr	
+	{
+				$$ = 0x1a;
+				push($2, NULL);
+	}
+	| LBR SP PLUS expr RBR
+	{
+				$$ = 0x1a;
+				push($4, NULL);
+	}
 	| SP			{ $$ = 0x1b; }
 	| PC			{ $$ = 0x1c; }
 	| EX			{ $$ = 0x1d; }
