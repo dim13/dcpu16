@@ -1,4 +1,4 @@
-/* $Id: gramar.y,v 1.28 2012/08/06 18:38:40 demon Exp $ */
+/* $Id: gramar.y,v 1.29 2012/08/06 18:55:49 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -70,7 +70,7 @@ struct label {
 %token NOP BRK DAT ORG
 %token JSR HCF INT IAG IAS RFI IAQ HWN HWQ HWI
 %token LBR RBR LBRACE RBRACE LPAR RPAR
-%token COMMA DP
+%token COMMA DP INCR DECR
 %token PLUS MINUS EMUL EDIV EMOD ENOT EXOR EAND EOR SHIFTL SHIFTR
 %token DOT HASH MACRO INCLUDE
 %token <ival> NUMBER
@@ -149,9 +149,9 @@ operand
 	: register		{ $$ = $1; }
 	| LBR register RBR	{ $$ = 0x08 + $2; }
 	| PUSH			{ $$ = 0x18; }
-	| LBR MINUS MINUS SP RBR{ $$ = 0x18; }
+	| LBR DECR SP RBR	{ $$ = 0x18; }
 	| POP			{ $$ = 0x18; }
-	| LBR SP PLUS PLUS RBR	{ $$ = 0x18; }
+	| LBR SP INCR RBR	{ $$ = 0x18; }
 	| PEEK			{ $$ = 0x19; }
 	| LBR SP RBR		{ $$ = 0x19; }
 	| PICK expr	
