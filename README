@@ -1,8 +1,11 @@
+$Id: README,v 1.4 2013/12/04 05:55:36 demon Exp $
+
 DCPU-16 Assembler/Emulator
 
-Main developtment platform is OpenBSD, thus if you wish to compile it
-on Debian you'll need freebsd-buildutils package. Compiles and runs on
-OS X. Other platforms are not tested.
+Main developtment platform is OpenBSD.
+For Linux/Debian you'll need freebsd-buildutils package.
+Compiles and runs on OS X. bsdmake package is required.
+Other platforms are not tested.
 
 Dependencies:
 	SDL
@@ -14,5 +17,6 @@ Dependencies:
 Status:
 	Spec 1.1	full support
 	Spec 1.5	in progress
+	Spec 1.7	in progress
 
 WWW: http://www.dim13.org/Tags/0x10c
