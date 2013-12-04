@@ -1,4 +1,4 @@
-/* $Id: emu.c,v 1.29 2012/05/09 01:34:43 demon Exp $ */
+/* $Id: emu.c,v 1.30 2013/12/04 05:49:31 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -413,7 +413,6 @@ void (*op[nOpt])(struct context *, unsigned short *, unsigned short *) = {
 	[SHR] = shr,
 	[ASR] = asr,
 	[SHL] = shl,
-	[STI] = sti,
 	[IFB] = ifb,
 	[IFC] = ifc,
 	[IFE] = ife,

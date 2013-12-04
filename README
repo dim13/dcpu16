@@ -1,8 +1,8 @@
 DCPU-16 Assembler/Emulator
 
 Main developtment platform is OpenBSD, thus if you wish to compile it
-on Debian you'll need freebsd-buildutils package. Other platforms are
-not tested.
+on Debian you'll need freebsd-buildutils package. Compiles and runs on
+OS X. Other platforms are not tested.
 
 Dependencies:
 	SDL

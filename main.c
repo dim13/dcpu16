@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.8 2012/05/09 01:34:43 demon Exp $ */
+/* $Id: main.c,v 1.9 2013/12/04 05:49:31 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -15,6 +15,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <SDL.h>
 #include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
