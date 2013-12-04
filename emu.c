@@ -1,4 +1,4 @@
-/* $Id: emu.c,v 1.30 2013/12/04 05:49:31 demon Exp $ */
+/* $Id: emu.c,v 1.31 2013/12/04 06:13:35 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -527,8 +527,6 @@ step(struct context *c)
 			++errors;
 		}
 	}
-
-	usleep(10 * cycle);	/* 100kHz */
 
 	return cycle;
 }

@@ -1,4 +1,4 @@
-/* $Id: gui.c,v 1.20 2012/05/08 22:54:40 demon Exp $ */
+/* $Id: gui.c,v 1.21 2013/12/04 06:13:35 demon Exp $ */
 /*
  * Copyright (c) 2012 Dimitri Sokolyuk <demon@dim13.org>
  *
@@ -193,7 +193,7 @@ guiemu(struct context *c)
 	loadfont(c->mem, "font.xpm");
 
 	while ((cnt = step(c)) != -1) {
-		if ((n += cnt) < 100)
+		if ((n += cnt) < 1000)
 			continue;
 
 		gettimeofday(&tv, NULL);
